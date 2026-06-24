@@ -86,5 +86,5 @@ inputs (slot *i* = input *i*).
 |---|---|---|---|
 | Camera Count | integer | 2 | 1-16 camera slots |
 | Num Presets | integer | 6 | 0-64 numbered presets (single row) |
-| Hold to Save (s) | double | 1.0 | Hold time to save vs. tap to recall |
+| Hold to Save (s) | double | 3 | Hold time to save vs. tap to recall |
 | Debug Print | enum | None | None / Function Calls / Tx / All |
