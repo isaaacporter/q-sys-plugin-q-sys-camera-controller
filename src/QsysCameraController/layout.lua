@@ -196,16 +196,16 @@
     local tY = trackTop + 26
 
     table.insert(graphics, {
-      Type = "GroupBox", Text = "Camera Tracking (Router)", FontSize = fs1, HTextAlign = "Left",
+      Type = "GroupBox", Text = "Camera Router (Optional)", FontSize = fs1, HTextAlign = "Left",
       Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
       CornerRadius = 8, Position = {0, trackTop}, Size = {trackGW, 60}
     })
     table.insert(graphics, {Type = "Text", Text = "Router", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {12, tY + 3}, Size = {48, h1}})
-    layout["router_select"] = {PrettyName = "Tracking~Router", Style = "ComboBox", FontSize = fs1, Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {62, tY}, Size = {258, 24}}
+    layout["router_select"] = {PrettyName = "Router~Component", Style = "ComboBox", FontSize = fs1, Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {62, tY}, Size = {258, 24}}
     table.insert(graphics, {Type = "Text", Text = "Output", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {332, tY + 3}, Size = {50, h1}})
-    layout["router_output"] = {PrettyName = "Tracking~Output", Style = "Text", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, FontSize = fs1, HTextAlign = "Center", Padding = 2, StrokeWidth = 1, Position = {384, tY}, Size = {56, 24}}
+    layout["router_output"] = {PrettyName = "Router~Output", Style = "Text", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, FontSize = fs1, HTextAlign = "Center", Padding = 2, StrokeWidth = 1, Position = {384, tY}, Size = {56, 24}}
     table.insert(graphics, {Type = "Text", Text = "Source", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {452, tY + 3}, Size = {50, h1}})
-    layout["tracked_source"] = {PrettyName = "Tracking~Source", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {504, tY}, Size = {trackGW - 504 - 40, 24}}
-    layout["router_found"] = {PrettyName = "Tracking~Router Found", Style = "Indicator", Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2, Position = {trackGW - 28, tY + 3}, Size = {18, 18}}
+    layout["tracked_source"] = {PrettyName = "Router~Source", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {504, tY}, Size = {trackGW - 504 - 40, 24}}
+    layout["router_found"] = {PrettyName = "Router~Found", Style = "Indicator", Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2, Position = {trackGW - 28, tY + 3}, Size = {18, 18}}
 
   end
