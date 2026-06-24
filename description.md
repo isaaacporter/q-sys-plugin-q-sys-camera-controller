@@ -1,0 +1,1 @@
+Selects among the PTZ-capable camera components in a Q-SYS design and relays a single shared PTZ / preset control set to the currently selected camera. Expandable camera count with a per-slot drop-down of discovered cameras.

@@ -1,0 +1,2 @@
+-- This plugin proxies to camera components elsewhere in the design at runtime
+-- via the Component library; it hosts no internal components.
