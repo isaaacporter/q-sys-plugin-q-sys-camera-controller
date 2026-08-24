@@ -208,4 +208,90 @@
     layout["tracked_source"] = {PrettyName = "Router~Source", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {504, tY}, Size = {trackGW - 504 - 40, 24}}
     layout["router_found"] = {PrettyName = "Router~Found", Style = "Indicator", Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2, Position = {trackGW - 28, tY + 3}, Size = {18, 18}}
 
+  elseif CurrentPage == "Imaging" then
+
+    -- Imaging / Exposure / White Balance groups, stacked to mirror the native
+    -- QSC camera Imaging block.
+    local wbGX = 0
+    local grpW = 320
+    local lblW = 110
+    local valX = wbGX + 12 + lblW + 10
+    local valW = grpW - lblW - 44
+
+    -- A label plus an integer value field rendered as a text box with a meter
+    -- fill behind it: a Knob laid out as "Text" fills up to its value in Color
+    -- and leaves the remainder in OffColor.
+    local function ValueRow(name, pretty, label, y)
+      table.insert(graphics, {
+        Type = "Text", Text = label, FontSize = fs1, HTextAlign = "Right",
+        Color = Palette.cti_navy, Position = {wbGX + 12, y + 4}, Size = {lblW, h1}
+      })
+      layout[name] = {
+        PrettyName = pretty, Style = "Text", FontSize = fs1, HTextAlign = "Center",
+        Color = Palette.meter_on, OffColor = Palette.meter_off, UnlinkOffColor = true,
+        TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+        Position = {valX, y}, Size = {valW, 26}
+      }
+    end
+
+    local imgGY = 44
+    local imgGH = 62
+    local expGY = imgGY + imgGH + 14
+    local expGH = 62
+    local wbGY = expGY + expGH + 14
+    local wbGW, wbGH = grpW, 98
+    local rowY  = wbGY + 26
+    local row2Y = rowY + 32
+
+    -- Title / build info -----------------------------------------------------
+    table.insert(graphics, {
+      Type = "Text", Text = "Q-SYS Camera Controller", FontSize = 16,
+      FontStyle = "Bold", HTextAlign = "Left", Color = Palette.cti_navy,
+      Position = {0, 4}, Size = {360, 24}
+    })
+    table.insert(graphics, {
+      Type = "Text", Text = "v" .. PluginInfo.BuildVersion, FontSize = fs1,
+      HTextAlign = "Right", Color = Palette.Gray,
+      Position = {wbGW - 120, 8}, Size = {120, h1}
+    })
+
+    table.insert(graphics, {
+      Type = "GroupBox", Text = "Imaging", FontSize = fs1, HTextAlign = "Left",
+      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+      CornerRadius = 8, Position = {wbGX, imgGY}, Size = {grpW, imgGH}
+    })
+    ValueRow("img.brightness", "Imaging~Brightness", "Brightness", imgGY + 26)
+
+    table.insert(graphics, {
+      Type = "GroupBox", Text = "Exposure", FontSize = fs1, HTextAlign = "Left",
+      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+      CornerRadius = 8, Position = {wbGX, expGY}, Size = {grpW, expGH}
+    })
+    ValueRow("exp.comp", "Exposure~Compensation", "Compensation", expGY + 26)
+
+    table.insert(graphics, {
+      Type = "GroupBox", Text = "White Balance", FontSize = fs1, HTextAlign = "Left",
+      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+      CornerRadius = 8, Position = {wbGX, wbGY}, Size = {wbGW, wbGH}
+    })
+    table.insert(graphics, {
+      Type = "Text", Text = "Mode", FontSize = fs1, HTextAlign = "Right",
+      Color = Palette.cti_navy, Position = {wbGX + 12, rowY + 4}, Size = {lblW, h1}
+    })
+    layout["wb.awb.mode"] = {
+      PrettyName = "Imaging~AWB Mode", Style = "ComboBox", FontSize = fs1,
+      HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
+      Position = {wbGX + 12 + lblW + 10, rowY}, Size = {wbGW - lblW - 44, 26}
+    }
+
+    table.insert(graphics, {
+      Type = "Text", Text = "AWB One Push", FontSize = fs1, HTextAlign = "Right",
+      Color = Palette.cti_navy, Position = {wbGX + 12, row2Y + 4}, Size = {lblW, h1}
+    })
+    layout["wb.one.push.trigger"] = {
+      PrettyName = "Imaging~AWB One Push", Legend = "", Style = "Button",
+      Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+      Margin = 3, Position = {wbGX + 12 + lblW + 10, row2Y}, Size = {56, 28}
+    }
+
   end

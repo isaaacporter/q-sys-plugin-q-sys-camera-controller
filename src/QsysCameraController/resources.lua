@@ -11,8 +11,10 @@ Palette = {
   ptz_off   = {124, 124, 124},  -- #7C7C7C
   green_on  = {0, 159, 60},     -- #009F3C
   green_off = {0, 75, 22},      -- #004B16
-  gray_off  = {137, 137, 137}   -- #898989
+  gray_off  = {137, 137, 137},  -- #898989
+  meter_on  = {31, 78, 140},    -- #1F4E8C  filled portion of a value meter
+  meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }
 
--- Pages shown by the plugin (single control page)
-PageNames = { "Control" }
+-- Pages shown by the plugin
+PageNames = { "Control", "Imaging" }

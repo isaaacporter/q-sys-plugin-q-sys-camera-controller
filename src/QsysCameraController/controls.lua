@@ -169,6 +169,45 @@
     PinStyle = "Both"
   })
 
+  -- Imaging / Exposure ---------------------------------------------------------
+  -- Integer value fields mirrored from the active camera.
+  local numFields = {
+    {name = "img.brightness", min = 0,  max = 14},
+    {name = "exp.comp",       min = -7, max = 7}
+  }
+  for _, n in ipairs(numFields) do
+    table.insert(ctrls, {
+      Name = n.name,
+      ControlType = "Knob",
+      ControlUnit = "Integer",
+      Min = n.min,
+      Max = n.max,
+      DefaultValue = 0,
+      Count = 1,
+      UserPin = true,
+      PinStyle = "Both"
+    })
+  end
+
+  -- Imaging / White Balance ----------------------------------------------------
+  -- Named to match the native QSC camera controls they drive.
+  -- Choices are mirrored from the active camera at runtime.
+  table.insert(ctrls, {
+    Name = "wb.awb.mode",
+    ControlType = "Text",
+    Count = 1,
+    UserPin = true,
+    PinStyle = "Both"
+  })
+  table.insert(ctrls, {
+    Name = "wb.one.push.trigger",
+    ControlType = "Button",
+    ButtonType = "Trigger",
+    Count = 1,
+    UserPin = true,
+    PinStyle = "Input"
+  })
+
   -- Numbered presets (tap = recall, hold = save). The button itself lights
   -- (its .Boolean is driven) when the camera is at that stored position.
   for p = 1, NumPresets do

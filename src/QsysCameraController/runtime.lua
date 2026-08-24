@@ -39,13 +39,19 @@
   local TRIGGER_MAP = {
     ptz_home     = "preset.home.load",
     home_save    = "preset.home.save.trigger",
-    privacy_save = "preset.private.save.trigger"
+    privacy_save = "preset.private.save.trigger",
+    ["wb.one.push.trigger"] = "wb.one.push.trigger"
   }
 
   -- Positions are read/written as a coordinate string on this control.
   local COORD_CTRL = "ptz.preset"
   -- Privacy recall toggles this Boolean.
   local PRIVACY_TOGGLE = "toggle.privacy"
+  -- Auto white balance mode (a ComboBox on the native camera).
+  local WB_MODE = "wb.awb.mode"
+  -- Integer value fields mirrored to/from the active camera. The plugin control
+  -- and the camera control share a name, so one list drives both directions.
+  local NUM_MIRROR = {"img.brightness", "exp.comp"}
 
   local Proxies = {}      -- [slot] = component proxy or nil
   local ActiveIndex = 1
@@ -55,6 +61,9 @@
   local PresetFbSuppress = false   -- guard while writing preset feedback state
   local CoordFbSuppress = false    -- guard while writing the coordinates readout
   local PrivacyFbSuppress = false  -- guard while writing the privacy toggle state
+  local WbModeFbSuppress = false   -- guard while writing the AWB mode combo
+  local NumFbSuppress = {}         -- [name] = true while writing that value field
+  local NumBoundCam = {}           -- [name] = camera currently subscribed
 
   local RouterProxy = nil         -- bound router component, or nil
   local RouterBoundCtl = nil      -- the router control we are subscribed to
@@ -111,11 +120,49 @@
     if cam and HasControl(cam, PRIVACY_TOGGLE) then
       pcall(function() v = cam[PRIVACY_TOGGLE].Boolean end)
     end
-    if Controls["privacy_load"] then
+    local ctl = Controls["privacy_load"]
+    if ctl then
       PrivacyFbSuppress = true
-      Controls["privacy_load"].Boolean = v
+      if ctl.Boolean ~= v then ctl.Boolean = v end
       PrivacyFbSuppress = false
     end
+  end
+
+  -- Mirror the active camera's AWB mode: its choice list and current value.
+  -- Writes are conditional so a settled combo emits no events of its own.
+  local function UpdateWbModeNow()
+    local ctl = Controls[WB_MODE]
+    if ctl == nil then return end
+    local cam = ActiveCam()
+    local choices, value = nil, ""
+    if cam and HasControl(cam, WB_MODE) then
+      pcall(function() choices = cam[WB_MODE].Choices end)
+      pcall(function() value = cam[WB_MODE].String or "" end)
+    end
+    WbModeFbSuppress = true
+    ctl.Choices = choices or {}
+    if ctl.String ~= value then ctl.String = value end
+    WbModeFbSuppress = false
+  end
+
+  -- Mirror one integer field from the active camera. Left untouched if the
+  -- camera does not expose it, so a partial model does not zero the field.
+  local function UpdateNumNow(name)
+    local ctl = Controls[name]
+    if ctl == nil then return end
+    local cam = ActiveCam()
+    local v = nil
+    if cam and HasControl(cam, name) then
+      pcall(function() v = cam[name].Value end)
+    end
+    if v == nil then return end
+    NumFbSuppress[name] = true
+    if ctl.Value ~= v then ctl.Value = v end
+    NumFbSuppress[name] = false
+  end
+
+  local function UpdateAllNumsNow()
+    for _, n in ipairs(NUM_MIRROR) do UpdateNumNow(n) end
   end
 
   -- ===== Preset store (per camera component name) =====
@@ -142,10 +189,12 @@
   local PresetSavedTimer = Timer.New()
   PresetSavedTimer.EventHandler = function()
     PresetSavedTimer:Stop()
-    if Controls["preset_saved"] then Controls["preset_saved"].Boolean = false end
+    local ctl = Controls["preset_saved"]
+    if ctl and ctl.Boolean then ctl.Boolean = false end
   end
   local function FlashPresetSaved()
-    if Controls["preset_saved"] then Controls["preset_saved"].Boolean = true end
+    local ctl = Controls["preset_saved"]
+    if ctl and not ctl.Boolean then ctl.Boolean = true end
     PresetSavedTimer:Start(3)
   end
 
@@ -208,7 +257,9 @@
   end
 
   local function UpdateActiveName()
-    Controls["active_camera_name"].String = ActiveCamName()
+    local ctl = Controls["active_camera_name"]
+    local want = ActiveCamName()
+    if ctl and ctl.String ~= want then ctl.String = want end
   end
 
   -- Active-camera feedback: Is Moving LED, Coordinates readout, and preset
@@ -217,6 +268,7 @@
   local CoordBoundCam = nil
   local SrcBoundCam = nil
   local PrivBoundCam = nil
+  local WbBoundCam = nil
 
   local function UpdateMovingNow()
     local cam = ActiveCam()
@@ -224,7 +276,8 @@
     if cam and HasControl(cam, "is.moving") then
       pcall(function() v = cam["is.moving"].Boolean end)
     end
-    if Controls["is_moving"] then Controls["is_moving"].Boolean = v end
+    local ctl = Controls["is_moving"]
+    if ctl and ctl.Boolean ~= v then ctl.Boolean = v end
   end
 
   local function CurrentCoords()
@@ -239,8 +292,9 @@
 
   local function UpdateCoordinatesNow()
     if Controls["coordinates"] then
+      local want = CurrentCoords() or ""
       CoordFbSuppress = true
-      Controls["coordinates"].String = CurrentCoords() or ""
+      if Controls["coordinates"].String ~= want then Controls["coordinates"].String = want end
       CoordFbSuppress = false
     end
   end
@@ -280,6 +334,17 @@
       pcall(function() PrivBoundCam[PRIVACY_TOGGLE].EventHandler = nil end)
     end
     PrivBoundCam = nil
+    if WbBoundCam ~= nil and HasControl(WbBoundCam, WB_MODE) then
+      pcall(function() WbBoundCam[WB_MODE].EventHandler = nil end)
+    end
+    WbBoundCam = nil
+    for _, n in ipairs(NUM_MIRROR) do
+      local prev = NumBoundCam[n]
+      if prev ~= nil and HasControl(prev, n) then
+        pcall(function() prev[n].EventHandler = nil end)
+      end
+      NumBoundCam[n] = nil
+    end
     local cam = ActiveCam()
     if cam ~= nil then
       if HasControl(cam, "peripheral.camera.source") then
@@ -297,10 +362,25 @@
         end)
         PrivBoundCam = cam
       end
+      for _, n in ipairs(NUM_MIRROR) do
+        if HasControl(cam, n) then
+          pcall(function()
+            cam[n].EventHandler = function() UpdateNumNow(n) end
+          end)
+          NumBoundCam[n] = cam
+        end
+      end
+      if HasControl(cam, WB_MODE) then
+        pcall(function()
+          cam[WB_MODE].EventHandler = function() UpdateWbModeNow() end
+        end)
+        WbBoundCam = cam
+      end
       if HasControl(cam, "is.moving") then
         pcall(function()
           cam["is.moving"].EventHandler = function(ctl)
-            if Controls["is_moving"] then Controls["is_moving"].Boolean = ctl.Boolean end
+            local out = Controls["is_moving"]
+            if out and out.Boolean ~= ctl.Boolean then out.Boolean = ctl.Boolean end
           end
         end)
         MovingBoundCam = cam
@@ -318,6 +398,8 @@
     UpdateMovingNow()
     UpdateCoordinatesNow()
     UpdatePrivacyNow()
+    UpdateWbModeNow()
+    UpdateAllNumsNow()
     CheckCamera()
     UpdatePresetHighlights()
   end
@@ -330,13 +412,13 @@
       local ok, comp = pcall(Component.New, name)
       if ok and comp ~= nil then
         Proxies[i] = comp
-        if found then found.Boolean = true end
+        if found and not found.Boolean then found.Boolean = true end
         dbg("bound slot", i, "->", name)
         return
       end
     end
     Proxies[i] = nil
-    if found then found.Boolean = false end
+    if found and found.Boolean then found.Boolean = false end
   end
 
   local function DiscoverCameras()
@@ -491,7 +573,8 @@
     local k, src
     if RouterSelCtl ~= nil then pcall(function() k   = RouterProxy[RouterSelCtl].Value end) end
     if RouterSrcCtl ~= nil then pcall(function() src = RouterProxy[RouterSrcCtl].String end) end
-    if Controls["tracked_source"] then Controls["tracked_source"].String = src or "" end
+    local srcCtl = Controls["tracked_source"]
+    if srcCtl and srcCtl.String ~= (src or "") then srcCtl.String = src or "" end
     if k ~= nil then
       k = math.floor(k)
       if k >= 1 and k <= CameraCount and k ~= ActiveIndex then
@@ -552,8 +635,10 @@
       if ok and comp ~= nil then RouterProxy = comp end
     end
     IndexRouterControls()
-    if Controls["router_found"] then Controls["router_found"].Boolean = (RouterProxy ~= nil) end
-    if RouterProxy == nil and Controls["tracked_source"] then Controls["tracked_source"].String = "" end
+    local foundCtl = Controls["router_found"]
+    if foundCtl and foundCtl.Boolean ~= (RouterProxy ~= nil) then foundCtl.Boolean = (RouterProxy ~= nil) end
+    local srcCtl = Controls["tracked_source"]
+    if RouterProxy == nil and srcCtl and srcCtl.String ~= "" then srcCtl.String = "" end
     BindRouter()
   end
 
@@ -658,6 +743,33 @@
     end
   end
 
+  for _, n in ipairs(NUM_MIRROR) do
+    local ctl = Controls[n]
+    if ctl ~= nil then
+      ctl.EventHandler = function(c)
+        if NumFbSuppress[n] then return end
+        local cam = ActiveCam()
+        if cam ~= nil and HasControl(cam, n) then
+          pcall(function()
+            if cam[n].Value ~= c.Value then cam[n].Value = c.Value end
+          end)
+        end
+      end
+    end
+  end
+
+  if Controls[WB_MODE] ~= nil then
+    Controls[WB_MODE].EventHandler = function(ctl)
+      if WbModeFbSuppress then return end
+      local cam = ActiveCam()
+      if cam ~= nil and HasControl(cam, WB_MODE) then
+        pcall(function()
+          if cam[WB_MODE].String ~= ctl.String then cam[WB_MODE].String = ctl.String end
+        end)
+      end
+    end
+  end
+
   if Controls["ptz_af"] ~= nil then
     Controls["ptz_af"].EventHandler = function() PulseCtl("focus.auto") end
   end
@@ -668,7 +780,9 @@
       if CoordFbSuppress then return end
       local cam = ActiveCam()
       if cam ~= nil and HasControl(cam, COORD_CTRL) then
-        pcall(function() cam[COORD_CTRL].String = ctl.String end)
+        pcall(function()
+          if cam[COORD_CTRL].String ~= ctl.String then cam[COORD_CTRL].String = ctl.String end
+        end)
       end
     end
   end
