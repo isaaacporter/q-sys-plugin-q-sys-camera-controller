@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.0.0.0",
-  BuildVersion = "1.0.0.0",
+  Version = "1.0.2.0",
+  BuildVersion = "1.0.2.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -589,7 +589,7 @@ if Controls then
   
     local Proxies = {}      -- [slot] = component proxy or nil
     local ActiveIndex = 1
-    local Suppress = false  -- guard against re-entrant radio writes
+    local Suppress = 0      -- depth counter guarding re-entrant radio writes
   
     local UpdatePresetHighlights    -- forward declaration (defined below)
     local PresetFbSuppress = false   -- guard while writing preset feedback state
@@ -598,6 +598,9 @@ if Controls then
   
     local RouterProxy = nil         -- bound router component, or nil
     local RouterBoundCtl = nil      -- the router control we are subscribed to
+    local RouterCtlNames = {}       -- control names present on the bound router
+    local RouterSelCtl = nil        -- resolved output-select control for the tracked output
+    local RouterSrcCtl = nil        -- resolved routed-source-name control for the tracked output
     local RouteActiveToRouter       -- forward declaration (defined below)
     local RouterApplying = false    -- guard: active change originated from the router
   
@@ -791,7 +794,10 @@ if Controls then
         local btn = Controls[fmt("preset_%03d", p)]
         if btn ~= nil then
           local saved = store[tostring(p)]
-          btn.Boolean = (cur ~= nil and cur ~= "" and saved ~= nil and saved ~= "" and saved ~= "0 0 0" and saved == cur)
+          local want = (cur ~= nil and cur ~= "" and saved ~= nil and saved ~= "" and saved ~= "0 0 0" and saved == cur)
+          -- conditional for the same reason as the slot radio: a redundant write
+          -- can echo back as an event and restart this update
+          if btn.Boolean ~= want then btn.Boolean = want end
         end
       end
       PresetFbSuppress = false
@@ -926,14 +932,25 @@ if Controls then
       UpdateActiveName()
     end
   
-    local function SetActiveIndex(i)
-      ActiveIndex = i
-      Suppress = true
+    -- Drive the slot radio so exactly one button is lit. Every write is
+    -- conditional: Q-Sys fires EventHandler on script writes, so an
+    -- unconditional write re-triggers this radio and, when Q-Sys delivers that
+    -- event after the Suppress window closes, the handler fights back and two
+    -- slots latch on. Writing only on change means a settled radio emits no
+    -- events at all, which is what makes it converge.
+    local function WriteActiveButtons(i)
+      Suppress = Suppress + 1
       for j = 1, CameraCount do
         local b = Controls[fmt("camera_active_%03d", j)]
-        if b ~= nil then b.Boolean = (j == i) end
+        local want = (j == i)
+        if b ~= nil and b.Boolean ~= want then b.Boolean = want end
       end
-      Suppress = false
+      Suppress = Suppress - 1
+    end
+  
+    local function SetActiveIndex(i)
+      ActiveIndex = i
+      WriteActiveButtons(i)
       UpdateActiveName()
       BindActiveFeedback()
       if RouteActiveToRouter then RouteActiveToRouter() end
@@ -949,15 +966,71 @@ if Controls then
       return n
     end
   
+    -- Router components disagree on control naming: the classic Router and
+    -- Router with Mixer expose "select.N", while the MediaCast Router renamed
+    -- the same control to "output.N.select". Resolve the name against the bound
+    -- component instead of assuming either form.
+    local SELECT_FORMS = {"select.%d", "output.%d.select"}
+  
+    -- Snapshot the bound router's control names so a renamed readout can be
+    -- matched by pattern rather than guessed.
+    local function IndexRouterControls()
+      RouterCtlNames = {}
+      if RouterProxy == nil then return end
+      local ok, ctrls = pcall(function() return Component.GetControls(RouterProxy) end)
+      if not ok or ctrls == nil then return end
+      for _, ctl in ipairs(ctrls) do
+        if type(ctl.Name) == "string" then table.insert(RouterCtlNames, ctl.Name) end
+      end
+      table.sort(RouterCtlNames)
+      dbg("router controls:", table.concat(RouterCtlNames, " "))
+    end
+  
+    local function ResolveSelectCtl(out)
+      for _, form in ipairs(SELECT_FORMS) do
+        local name = fmt(form, out)
+        if HasControl(RouterProxy, name) then return name end
+      end
+      return nil
+    end
+  
+    -- Routed-source-name readout: the classic name first, then any control on
+    -- this router whose name carries "source", "name" and the output index.
+    local function ResolveSourceNameCtl(out)
+      local classic = fmt("output.%d.source.name", out)
+      if HasControl(RouterProxy, classic) then return classic end
+      local tok = "." .. out .. "."
+      for _, name in ipairs(RouterCtlNames) do
+        local lower = string.lower(name)
+        if string.find(lower, "source", 1, true)
+           and string.find(lower, "name", 1, true)
+           and string.find("." .. lower .. ".", tok, 1, true) then
+          return name
+        end
+      end
+      return nil
+    end
+  
+    local function ResolveRouterCtls()
+      RouterSelCtl = nil
+      RouterSrcCtl = nil
+      if RouterProxy == nil then return end
+      local out = RouterOutputNum()
+      RouterSelCtl = ResolveSelectCtl(out)
+      RouterSrcCtl = ResolveSourceNameCtl(out)
+      if RouterSelCtl == nil then
+        dbg("router exposes no output-select control for output", out)
+      else
+        dbg("router output", out, "select control", RouterSelCtl)
+      end
+    end
+  
     -- Router output select (Integer input index) drives the active slot.
     local function ApplyRouterTracking()
       if RouterProxy == nil then return end
-      local out = RouterOutputNum()
-      local selCtl  = "select." .. out
-      local nameCtl = "output." .. out .. ".source.name"
       local k, src
-      if HasControl(RouterProxy, selCtl)  then pcall(function() k   = RouterProxy[selCtl].Value end) end
-      if HasControl(RouterProxy, nameCtl) then pcall(function() src = RouterProxy[nameCtl].String end) end
+      if RouterSelCtl ~= nil then pcall(function() k   = RouterProxy[RouterSelCtl].Value end) end
+      if RouterSrcCtl ~= nil then pcall(function() src = RouterProxy[RouterSrcCtl].String end) end
       if Controls["tracked_source"] then Controls["tracked_source"].String = src or "" end
       if k ~= nil then
         k = math.floor(k)
@@ -972,8 +1045,9 @@ if Controls then
     -- Route the active camera to the output: slot index == router input index.
     RouteActiveToRouter = function()
       if RouterApplying or RouterProxy == nil then return end
-      local selCtl = "select." .. RouterOutputNum()
-      if HasControl(RouterProxy, selCtl) then
+      if RouterSelCtl == nil then ResolveRouterCtls() end
+      local selCtl = RouterSelCtl
+      if selCtl ~= nil then
         pcall(function()
           if math.floor((RouterProxy[selCtl].Value or -1)) ~= ActiveIndex then
             RouterProxy[selCtl].Value = ActiveIndex
@@ -992,9 +1066,14 @@ if Controls then
   
     local function BindRouter()
       UnbindRouter()
-      if RouterProxy == nil then return end
-      local selCtl = "select." .. RouterOutputNum()
-      if HasControl(RouterProxy, selCtl) then
+      if RouterProxy == nil then
+        RouterSelCtl = nil
+        RouterSrcCtl = nil
+        return
+      end
+      ResolveRouterCtls()
+      local selCtl = RouterSelCtl
+      if selCtl ~= nil then
         pcall(function()
           RouterProxy[selCtl].EventHandler = function() ApplyRouterTracking() end
         end)
@@ -1012,6 +1091,7 @@ if Controls then
         local ok, comp = pcall(Component.New, name)
         if ok and comp ~= nil then RouterProxy = comp end
       end
+      IndexRouterControls()
       if Controls["router_found"] then Controls["router_found"].Boolean = (RouterProxy ~= nil) end
       if RouterProxy == nil and Controls["tracked_source"] then Controls["tracked_source"].String = "" end
       BindRouter()
@@ -1031,7 +1111,8 @@ if Controls then
           local ok2, ctrls = pcall(function() return Component.GetControls(Component.New(c.Name)) end)
           if ok2 and ctrls ~= nil then
             for _, ctl in ipairs(ctrls) do
-              if ctl.Name == "select.1" then isR = true break end
+              -- "select.1" = classic Router; "output.1.select" = MediaCast Router
+              if ctl.Name == "select.1" or ctl.Name == "output.1.select" then isR = true break end
             end
           end
         end
@@ -1075,13 +1156,15 @@ if Controls then
       end
       if act ~= nil then
         act.EventHandler = function(ctl)
-          if Suppress then return end
+          if Suppress > 0 then return end
           if ctl.Boolean then
             SetActiveIndex(i)
           else
-            Suppress = true
-            ctl.Boolean = true
-            Suppress = false
+            -- A slot went low. Never force THIS slot back high: that fights the
+            -- radio write and latches two slots on. Re-assert the real active
+            -- slot instead -- idempotent, so a correct radio settles silently
+            -- and pressing the active slot simply re-lights it.
+            WriteActiveButtons(ActiveIndex)
           end
         end
       end
