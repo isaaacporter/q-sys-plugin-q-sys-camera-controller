@@ -39,8 +39,7 @@
   local TRIGGER_MAP = {
     ptz_home     = "preset.home.load",
     home_save    = "preset.home.save.trigger",
-    privacy_save = "preset.private.save.trigger",
-    ["wb.one.push.trigger"] = "wb.one.push.trigger"
+    privacy_save = "preset.private.save.trigger"
   }
 
   -- Positions are read/written as a coordinate string on this control.
@@ -49,13 +48,9 @@
   local PRIVACY_TOGGLE = "toggle.privacy"
   -- Auto white balance mode (a ComboBox on the native camera).
   local WB_MODE = "wb.awb.mode"
-  -- Component.GetControls() does not report Choices, and the live proxy may not
-  -- either. Fall back to the camera's known modes so the combo is never empty
-  -- while a camera is bound.
+  -- The camera normally reports its own Choices; fall back to the known modes so
+  -- the combo is never empty on a model that does not.
   local WB_MODE_CHOICES = {"Auto", "Manual", "One Push"}
-  -- Integer value fields mirrored to/from the active camera. The plugin control
-  -- and the camera control share a name, so one list drives both directions.
-  local NUM_MIRROR = {"img.brightness", "exp.comp"}
 
   local Proxies = {}      -- [slot] = component proxy or nil
   local ActiveIndex = 1
@@ -65,16 +60,8 @@
   local PresetFbSuppress = false   -- guard while writing preset feedback state
   local CoordFbSuppress = false    -- guard while writing the coordinates readout
   local PrivacyFbSuppress = false  -- guard while writing the privacy toggle state
-  local WbModeFbSuppress = false   -- guard while writing the AWB mode combo
-  local NumFbSuppress = {}         -- [name] = true while writing that value field
-  local NumBoundCam = {}           -- [name] = camera currently subscribed
-
-  -- Controls whose enabled state follows the camera's own: the native block
-  -- greys out Aperture when Exposure Mode is Auto, the manual gains when AWB
-  -- Mode is Auto, and so on. IsDisabled is readable on a proxied control but
-  -- changing it fires no event, so this is refreshed on bind, whenever a mode
-  -- control changes, and on a slow timer as a backstop.
-  local DISABLE_MIRROR = {"img.brightness", "exp.comp", "wb.awb.mode", "wb.one.push.trigger"}
+  local CamFbSuppress = {}         -- [name] = true while writing that control's feedback
+  local CamBound = {}              -- [name] = camera currently subscribed for it
 
   local RouterProxy = nil         -- bound router component, or nil
   local RouterBoundCtl = nil      -- the router control we are subscribed to
@@ -139,58 +126,60 @@
     end
   end
 
-  -- Mirror the active camera's AWB mode: its choice list and current value.
-  -- Writes are conditional so a settled combo emits no events of its own.
-  local function UpdateWbModeNow()
-    local ctl = Controls[WB_MODE]
+  -- Mirror one registry control in from the active camera. Every write is
+  -- conditional, so a settled control emits no events of its own.
+  local function MirrorIn(d)
+    local ctl = Controls[d.name]
     if ctl == nil then return end
     local cam = ActiveCam()
-    local choices, value, bound = nil, "", false
-    if cam and HasControl(cam, WB_MODE) then
-      bound = true
-      pcall(function() choices = cam[WB_MODE].Choices end)
-      pcall(function() value = cam[WB_MODE].String or "" end)
+    local present = (cam ~= nil) and HasControl(cam, d.name)
+    CamFbSuppress[d.name] = true
+    if present then
+      if d.kind == "int" or d.kind == "float" then
+        local v; pcall(function() v = cam[d.name].Value end)
+        if v ~= nil and ctl.Value ~= v then ctl.Value = v end
+      elseif d.kind == "bool" then
+        local v; pcall(function() v = cam[d.name].Boolean end)
+        if v ~= nil and ctl.Boolean ~= v then ctl.Boolean = v end
+      elseif d.kind == "enum" then
+        local ch, s
+        pcall(function() ch = cam[d.name].Choices end)
+        pcall(function() s  = cam[d.name].String end)
+        if (ch == nil or #ch == 0) and d.name == WB_MODE then ch = WB_MODE_CHOICES end
+        ctl.Choices = ch or {}
+        if s ~= nil and ctl.String ~= s then ctl.String = s end
+      elseif d.kind == "ro" then
+        -- Aperture, Shutter and friends already arrive formatted (f/1.8, 1/60).
+        local s; pcall(function() s = cam[d.name].String end)
+        if s ~= nil and ctl.String ~= s then ctl.String = s end
+      end
     end
-    -- Only substitute the known list when a camera is actually bound; with no
-    -- camera the combo stays empty rather than offering modes that go nowhere.
-    if bound and (choices == nil or #choices == 0) then choices = WB_MODE_CHOICES end
-    WbModeFbSuppress = true
-    ctl.Choices = choices or {}
-    if ctl.String ~= value then ctl.String = value end
-    WbModeFbSuppress = false
-  end
-
-  -- Mirror one integer field from the active camera. Left untouched if the
-  -- camera does not expose it, so a partial model does not zero the field.
-  local function UpdateNumNow(name)
-    local ctl = Controls[name]
-    if ctl == nil then return end
-    local cam = ActiveCam()
-    local v = nil
-    if cam and HasControl(cam, name) then
-      pcall(function() v = cam[name].Value end)
+    -- Grey-out follows the camera. A control it does not expose, and every
+    -- control while no camera is bound, reads disabled -- which is how the
+    -- native block shows a setting that does not apply.
+    local want = true
+    if present then
+      local ok, v = pcall(function() return cam[d.name].IsDisabled end)
+      if ok and v ~= nil then want = v else want = false end
     end
-    if v == nil then return end
-    NumFbSuppress[name] = true
-    if ctl.Value ~= v then ctl.Value = v end
-    NumFbSuppress[name] = false
+    if ctl.IsDisabled ~= want then ctl.IsDisabled = want end
+    CamFbSuppress[d.name] = false
   end
 
-  local function UpdateAllNumsNow()
-    for _, n in ipairs(NUM_MIRROR) do UpdateNumNow(n) end
+  local function MirrorAll()
+    for _, d in ipairs(CamCtls) do MirrorIn(d) end
   end
 
-  -- Mirror the camera's own enabled state. A control the active camera does not
-  -- expose -- or any control while no camera is bound -- is disabled, which is
-  -- how the native block shows a setting that does not apply.
+  -- IsDisabled raises no event, so re-read it periodically to catch grey-out
+  -- driven by camera controls the plugin has not subscribed to.
   local function RefreshDisabled()
     local cam = ActiveCam()
-    for _, n in ipairs(DISABLE_MIRROR) do
-      local ctl = Controls[n]
+    for _, d in ipairs(CamCtls) do
+      local ctl = Controls[d.name]
       if ctl ~= nil then
         local want = true
-        if cam ~= nil and HasControl(cam, n) then
-          local ok, v = pcall(function() return cam[n].IsDisabled end)
+        if cam ~= nil and HasControl(cam, d.name) then
+          local ok, v = pcall(function() return cam[d.name].IsDisabled end)
           if ok and v ~= nil then want = v else want = false end
         end
         if ctl.IsDisabled ~= want then ctl.IsDisabled = want end
@@ -306,7 +295,6 @@
   local CoordBoundCam = nil
   local SrcBoundCam = nil
   local PrivBoundCam = nil
-  local WbBoundCam = nil
 
   local function UpdateMovingNow()
     local cam = ActiveCam()
@@ -372,16 +360,12 @@
       pcall(function() PrivBoundCam[PRIVACY_TOGGLE].EventHandler = nil end)
     end
     PrivBoundCam = nil
-    if WbBoundCam ~= nil and HasControl(WbBoundCam, WB_MODE) then
-      pcall(function() WbBoundCam[WB_MODE].EventHandler = nil end)
-    end
-    WbBoundCam = nil
-    for _, n in ipairs(NUM_MIRROR) do
-      local prev = NumBoundCam[n]
-      if prev ~= nil and HasControl(prev, n) then
-        pcall(function() prev[n].EventHandler = nil end)
+    for _, d in ipairs(CamCtls) do
+      local prev = CamBound[d.name]
+      if prev ~= nil and HasControl(prev, d.name) then
+        pcall(function() prev[d.name].EventHandler = nil end)
       end
-      NumBoundCam[n] = nil
+      CamBound[d.name] = nil
     end
     local cam = ActiveCam()
     if cam ~= nil then
@@ -400,20 +384,18 @@
         end)
         PrivBoundCam = cam
       end
-      for _, n in ipairs(NUM_MIRROR) do
-        if HasControl(cam, n) then
+      -- Subscribe to every registry control on this camera only. An enum is a
+      -- mode control, and a mode change is what drives the camera's grey-out
+      -- logic, so re-read the whole page when one changes.
+      for _, d in ipairs(CamCtls) do
+        if d.kind ~= "trigger" and HasControl(cam, d.name) then
           pcall(function()
-            cam[n].EventHandler = function() UpdateNumNow(n) end
+            cam[d.name].EventHandler = function()
+              if d.kind == "enum" then MirrorAll() else MirrorIn(d) end
+            end
           end)
-          NumBoundCam[n] = cam
+          CamBound[d.name] = cam
         end
-      end
-      if HasControl(cam, WB_MODE) then
-        pcall(function()
-          -- A mode change is what drives most of the camera's grey-out logic.
-          cam[WB_MODE].EventHandler = function() UpdateWbModeNow(); RefreshDisabled() end
-        end)
-        WbBoundCam = cam
       end
       if HasControl(cam, "is.moving") then
         pcall(function()
@@ -437,9 +419,7 @@
     UpdateMovingNow()
     UpdateCoordinatesNow()
     UpdatePrivacyNow()
-    UpdateWbModeNow()
-    UpdateAllNumsNow()
-    RefreshDisabled()
+    MirrorAll()
     CheckCamera()
     UpdatePresetHighlights()
   end
@@ -783,30 +763,33 @@
     end
   end
 
-  for _, n in ipairs(NUM_MIRROR) do
-    local ctl = Controls[n]
-    if ctl ~= nil then
-      ctl.EventHandler = function(c)
-        if NumFbSuppress[n] then return end
-        local cam = ActiveCam()
-        if cam ~= nil and HasControl(cam, n) then
-          pcall(function()
-            if cam[n].Value ~= c.Value then cam[n].Value = c.Value end
-          end)
-        end
-      end
+  -- Operator edits go back to the active camera. Read-only entries have no
+  -- handler at all, so nothing can be typed into a value the camera owns.
+  local function WriteOut(d, c)
+    if CamFbSuppress[d.name] then return end
+    if d.kind == "trigger" then PulseCtl(d.name) return end
+    local cam = ActiveCam()
+    if cam == nil or not HasControl(cam, d.name) then return end
+    if d.kind == "int" or d.kind == "float" then
+      pcall(function() if cam[d.name].Value ~= c.Value then cam[d.name].Value = c.Value end end)
+    elseif d.kind == "bool" then
+      pcall(function() if cam[d.name].Boolean ~= c.Boolean then cam[d.name].Boolean = c.Boolean end end)
+    elseif d.kind == "enum" then
+      pcall(function() if cam[d.name].String ~= c.String then cam[d.name].String = c.String end end)
     end
   end
 
-  if Controls[WB_MODE] ~= nil then
-    Controls[WB_MODE].EventHandler = function(ctl)
-      if WbModeFbSuppress then return end
-      local cam = ActiveCam()
-      if cam ~= nil and HasControl(cam, WB_MODE) then
-        pcall(function()
-          if cam[WB_MODE].String ~= ctl.String then cam[WB_MODE].String = ctl.String end
-        end)
-      end
+  for _, d in ipairs(CamCtls) do
+    local ctl = Controls[d.name]
+    if ctl ~= nil and d.kind ~= "ro" then
+      ctl.EventHandler = function(c) WriteOut(d, c) end
+    end
+  end
+
+  for _, t in ipairs(CamPageTriggers) do
+    local ctl = Controls[t.name]
+    if ctl ~= nil then
+      ctl.EventHandler = function() PulseCtl(t.name) end
     end
   end
 

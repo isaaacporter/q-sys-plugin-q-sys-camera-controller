@@ -18,6 +18,9 @@
 -- Resources (palette, page list)
 --[[ #include "resources.lua" ]]
 
+-- Registry of proxied camera controls (drives controls, layout and runtime)
+--[[ #include "camera_controls.lua" ]]
+
 -- Define the colour of the plugin object in the design
 function GetColor(props)
   return Palette.cti_navy

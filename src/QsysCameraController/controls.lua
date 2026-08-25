@@ -169,44 +169,28 @@
     PinStyle = "Both"
   })
 
-  -- Imaging / Exposure ---------------------------------------------------------
-  -- Integer value fields mirrored from the active camera.
-  local numFields = {
-    {name = "img.brightness", min = 0,  max = 14},
-    {name = "exp.comp",       min = -7, max = 7}
+  -- Proxied camera controls ----------------------------------------------------
+  -- Emitted from the registry so a control is declared exactly once. Each keeps
+  -- the camera's own control name, so the pin lines up with what it drives.
+  local KIND_DEF = {
+    int     = function(d) return {ControlType = "Knob", ControlUnit = "Integer", Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
+    float   = function(d) return {ControlType = "Knob", ControlUnit = "Float",   Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
+    bool    = function(d) return {ControlType = "Button", ButtonType = "Toggle", PinStyle = "Both"} end,
+    enum    = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
+    ro      = function(d) return {ControlType = "Indicator", IndicatorType = "Text", PinStyle = "Output"} end,
+    trigger = function(d) return {ControlType = "Button", ButtonType = "Trigger", PinStyle = "Input"} end
   }
-  for _, n in ipairs(numFields) do
-    table.insert(ctrls, {
-      Name = n.name,
-      ControlType = "Knob",
-      ControlUnit = "Integer",
-      Min = n.min,
-      Max = n.max,
-      DefaultValue = 0,
-      Count = 1,
-      UserPin = true,
-      PinStyle = "Both"
-    })
+
+  local function EmitCamCtl(d)
+    local def = KIND_DEF[d.kind](d)
+    def.Name = d.name
+    def.Count = 1
+    def.UserPin = true
+    table.insert(ctrls, def)
   end
 
-  -- Imaging / White Balance ----------------------------------------------------
-  -- Named to match the native QSC camera controls they drive.
-  -- Choices are mirrored from the active camera at runtime.
-  table.insert(ctrls, {
-    Name = "wb.awb.mode",
-    ControlType = "Text",
-    Count = 1,
-    UserPin = true,
-    PinStyle = "Both"
-  })
-  table.insert(ctrls, {
-    Name = "wb.one.push.trigger",
-    ControlType = "Button",
-    ButtonType = "Trigger",
-    Count = 1,
-    UserPin = true,
-    PinStyle = "Input"
-  })
+  for _, d in ipairs(CamCtls) do EmitCamCtl(d) end
+  for _, t in ipairs(CamPageTriggers) do EmitCamCtl({name = t.name, kind = "trigger"}) end
 
   -- Numbered presets (tap = recall, hold = save). The button itself lights
   -- (its .Boolean is driven) when the camera is at that stored position.

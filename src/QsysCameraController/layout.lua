@@ -224,38 +224,52 @@
 
   elseif CurrentPage == "Imaging" then
 
-    -- Imaging / Exposure / White Balance groups, stacked to mirror the native
-    -- QSC camera Imaging block.
-    local wbGX = 0
-    local grpW = PLUGIN_W
-    local lblW = 110
-    local valX = wbGX + 12 + lblW + 10
-    local valW = grpW - lblW - 44
+    -- Group boxes and rows are rendered from the CamCtls registry, so the page
+    -- is defined by data rather than by positions repeated per control.
+    local rowStep = 26
+    local ctlH    = 22
+    local colGap  = 8
+    local colW    = math.floor((PLUGIN_W - 16 - colGap) / 2)
+    local lblW2   = 100   -- label width in a two-column group
+    local lblW1   = 240   -- label width in a single-column group
 
-    -- A label plus an integer value field rendered as a text box with a meter
-    -- fill behind it: a Knob laid out as "Text" fills up to its value in Color
-    -- and leaves the remainder in OffColor.
-    local function ValueRow(name, pretty, label, y)
+    local function ColX(c) return 8 + (c - 1) * (colW + colGap) end
+
+    local function PlaceLabel(x, y, w, text)
       table.insert(graphics, {
-        Type = "Text", Text = label, FontSize = fs1, HTextAlign = "Right",
-        Color = Palette.cti_navy, Position = {wbGX + 12, y + 4}, Size = {lblW, h1}
+        Type = "Text", Text = text, FontSize = fs1, HTextAlign = "Right",
+        Color = Palette.cti_navy, Position = {x, y + 2}, Size = {w, h1}
       })
-      layout[name] = {
-        PrettyName = pretty, Style = "Text", FontSize = fs1, HTextAlign = "Center",
-        Color = Palette.meter_on, OffColor = Palette.meter_off, UnlinkOffColor = true,
-        TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
-        Position = {valX, y}, Size = {valW, 26}
-      }
     end
 
-    local imgGY = 44
-    local imgGH = 62
-    local expGY = imgGY + imgGH + 14
-    local expGH = 62
-    local wbGY = expGY + expGH + 14
-    local wbGW, wbGH = grpW, 98
-    local rowY  = wbGY + 26
-    local row2Y = rowY + 32
+    -- int/float render as a text box over a meter fill; ro mirrors the camera's
+    -- own formatted string and is drawn dimmed, as the native block draws a
+    -- value you cannot set.
+    local function PlaceCtl(d, x, y, w)
+      if d.kind == "int" or d.kind == "float" then
+        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+          HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
+          UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+          Position = {x, y}, Size = {w, ctlH}}
+      elseif d.kind == "enum" then
+        layout[d.name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fs1,
+          HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
+          Position = {x, y}, Size = {w, ctlH}}
+      elseif d.kind == "ro" then
+        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+          HTextAlign = "Center", Color = Palette.meter_off, OffColor = Palette.meter_off,
+          UnlinkOffColor = true, TextColor = Palette.Gray, Padding = 2, StrokeWidth = 1,
+          Position = {x, y}, Size = {w, ctlH}}
+      elseif d.kind == "bool" then
+        layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
+          Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+          Margin = 3, Position = {x, y}, Size = {44, ctlH}}
+      elseif d.kind == "trigger" then
+        layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
+          Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+          Margin = 3, Position = {x, y}, Size = {44, ctlH}}
+      end
+    end
 
     -- Title / build info -----------------------------------------------------
     table.insert(graphics, {
@@ -266,46 +280,44 @@
     table.insert(graphics, {
       Type = "Text", Text = "v" .. PluginInfo.BuildVersion, FontSize = fs1,
       HTextAlign = "Right", Color = Palette.Gray,
-      Position = {wbGW - 120, 8}, Size = {120, h1}
+      Position = {PLUGIN_W - 120, 8}, Size = {120, h1}
     })
 
-    table.insert(graphics, {
-      Type = "GroupBox", Text = "Imaging", FontSize = fs1, HTextAlign = "Left",
-      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
-      CornerRadius = 8, Position = {wbGX, imgGY}, Size = {grpW, imgGH}
-    })
-    ValueRow("img.brightness", "Imaging~Brightness", "Brightness", imgGY + 26)
+    -- Page-level trigger sits above the first group, as on the native block.
+    local y = 30
+    for _, t in ipairs(CamPageTriggers) do
+      if t.page == CurrentPage then
+        PlaceLabel(8, y, PLUGIN_W - 8 - 48 - 12, t.label)
+        layout[t.name] = {PrettyName = t.pretty, Legend = "", Style = "Button",
+          Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+          Margin = 3, Position = {PLUGIN_W - 48, y}, Size = {36, ctlH}}
+        y = y + rowStep + 4
+      end
+    end
 
-    table.insert(graphics, {
-      Type = "GroupBox", Text = "Exposure", FontSize = fs1, HTextAlign = "Left",
-      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
-      CornerRadius = 8, Position = {wbGX, expGY}, Size = {grpW, expGH}
-    })
-    ValueRow("exp.comp", "Exposure~Compensation", "Compensation", expGY + 26)
-
-    table.insert(graphics, {
-      Type = "GroupBox", Text = "White Balance", FontSize = fs1, HTextAlign = "Left",
-      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
-      CornerRadius = 8, Position = {wbGX, wbGY}, Size = {wbGW, wbGH}
-    })
-    table.insert(graphics, {
-      Type = "Text", Text = "Mode", FontSize = fs1, HTextAlign = "Right",
-      Color = Palette.cti_navy, Position = {wbGX + 12, rowY + 4}, Size = {lblW, h1}
-    })
-    layout["wb.awb.mode"] = {
-      PrettyName = "Imaging~AWB Mode", Style = "ComboBox", FontSize = fs1,
-      HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
-      Position = {wbGX + 12 + lblW + 10, rowY}, Size = {wbGW - lblW - 44, 26}
-    }
-
-    table.insert(graphics, {
-      Type = "Text", Text = "AWB One Push", FontSize = fs1, HTextAlign = "Right",
-      Color = Palette.cti_navy, Position = {wbGX + 12, row2Y + 4}, Size = {lblW, h1}
-    })
-    layout["wb.one.push.trigger"] = {
-      PrettyName = "Imaging~AWB One Push", Legend = "", Style = "Button",
-      Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-      Margin = 3, Position = {wbGX + 12 + lblW + 10, row2Y}, Size = {56, 28}
-    }
+    for _, g in ipairs(CamGroups) do
+      if g.page == CurrentPage then
+        local gh = 26 + g.rows * rowStep + 8
+        table.insert(graphics, {
+          Type = "GroupBox", Text = g.name, FontSize = fs1, HTextAlign = "Left",
+          Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+          CornerRadius = 8, Position = {0, y}, Size = {PLUGIN_W, gh}
+        })
+        for _, d in ipairs(CamCtls) do
+          if d.page == CurrentPage and d.group == g.name then
+            local ry = y + 26 + (d.row - 1) * rowStep
+            if g.cols == 1 then
+              PlaceLabel(8, ry, lblW1, d.label)
+              PlaceCtl(d, 8 + lblW1 + 12, ry, PLUGIN_W - (8 + lblW1 + 12) - 12)
+            else
+              local x = ColX(d.col)
+              PlaceLabel(x, ry, lblW2, d.label)
+              PlaceCtl(d, x + lblW2 + 4, ry, colW - lblW2 - 4)
+            end
+          end
+        end
+        y = y + gh + 12
+      end
+    end
 
   end
