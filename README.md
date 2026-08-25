@@ -63,8 +63,47 @@ itself, one button per preset:
 
 | Page | Contents |
 |---|---|
-| Control | Cameras, Pan / Tilt / Zoom, Presets, Camera Router |
-| Imaging | Imaging, Exposure, White Balance |
+| Setup | Cameras, Camera Router (the CTI-specific parts) |
+| Pan / Tilt / Zoom | Pan / Tilt / Zoom, Focus, Presets |
+| Imaging | Imaging, Exposure, White Balance, Noise Reduction, SDI/HDMI Format |
+| Auto Framing | Auto Framing |
+| IP Streams | Preview Stream / Mediacast Stream |
+| Status | Status, Network, Hardware Details |
+
+Every group box is the full 435px plugin width, matching the native camera
+block. Pages other than Setup mirror the native layout.
+
+## The control registry
+
+`camera_controls.lua` declares every native control the plugin proxies -- its
+kind, range, page, group and grid position. `GetControls` emits from it, the
+layout renders from it, and the runtime subscribes, mirrors and writes back from
+it. Adding a control is one entry in one file.
+
+| kind | rendering | behaviour |
+|---|---|---|
+| `int` / `float` | text box over a meter fill | mirrors `Value` both ways |
+| `text` | plain editable field | mirrors `String` both ways |
+| `bool` | green toggle | mirrors `Boolean` both ways |
+| `enum` | ComboBox | choices mirrored from the camera |
+| `ro` | dimmed readout | mirrors the camera's formatted `String`; no handler |
+| `led` | indicator | mirrors `Boolean`, read-only |
+| `status` | status bar | mirrors the camera's Status control |
+| `trigger` | button | pulses the camera control |
+| `statetrig` | button | pulses `<name>.trigger`, lights from `<name>.state` |
+
+**Ranges are declared, not discovered.** A proxied control cannot report its own
+range -- reading `.Min` on a Control *raises* rather than returning nil -- so
+every `int`/`float` carries an explicit min/max for the NC-20x60. Where the
+camera already returns a display-ready string (`f/1.8`, `1/60`, `1080p60`,
+`60Hz`) the control is `ro` instead and needs no range.
+
+**Grey-out is mirrored, not re-derived.** `IsDisabled` *is* readable on a proxied
+control and tracks the camera's own logic, so Aperture greys out when Exposure
+Mode is Auto exactly as it does natively. A control the camera does not expose,
+and every control while no camera is bound, reads disabled. Changing
+`IsDisabled` fires no event, so it is refreshed on bind, on any mode change, and
+on a 3s backstop timer.
 
 ## Imaging -- Imaging and Exposure
 
@@ -119,6 +158,20 @@ carrying "source", "name" and the output index.
 On bind the plugin first adopts the router's current selection. An echo guard
 prevents the two directions from fighting, and redundant writes are skipped.
 
+## Not reproduced from the native block
+
+- **The live Preview window.** The native Preview group hosts a video stream; a
+  plugin proxying another component via `Component` cannot re-host it. The
+  Preview group is therefore omitted rather than shown as an empty frame. Use
+  the camera component's own Preview, or a Media Display, alongside this plugin.
+- **Focus In / Out / AF buttons** sit with Zoom in the Pan/Tilt/Zoom group
+  rather than in the Focus group, which is where this plugin has always drawn
+  them. The Focus group holds Manual Speed, AF Sensitivity and AF Zone.
+- **PTZ pad pin names** are the plugin's own (`ptz_pan_left`, `ptz_home`, ...)
+  rather than the camera's (`pan.left`, `preset.home.load`). Renaming them would
+  match the rest of the plugin but would break existing wiring, so it has been
+  left alone deliberately.
+
 ## Required setup
 
 For the plugin to see and drive a component, that component must have **Script
@@ -148,3 +201,8 @@ inputs (slot *i* = input *i*).
 | 1.0.4.0 | All feedback writes made conditional -- fixes an unbounded event loop between the Coordinates field and the camera's `ptz.preset` |
 | 1.0.5.0 | Imaging page gains Imaging (Brightness) and Exposure (Compensation) groups |
 | 1.0.6.0 | White value text on the meter bars; deeper blue fill |
+| 1.1.0.0 | Cameras and Camera Router moved to a new Setup page; 435px width |
+| 1.1.1.0 | AWB mode falls back to known modes if the camera reports no choices |
+| 1.1.2.0 | Grey-out mirrored from the camera's own `IsDisabled` |
+| 1.2.0.0 | Control registry introduced; full Imaging page |
+| 1.3.0.0 | Pan/Tilt/Zoom, Auto Framing, IP Streams and Status pages |

@@ -173,12 +173,17 @@
   -- Emitted from the registry so a control is declared exactly once. Each keeps
   -- the camera's own control name, so the pin lines up with what it drives.
   local KIND_DEF = {
-    int     = function(d) return {ControlType = "Knob", ControlUnit = "Integer", Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
-    float   = function(d) return {ControlType = "Knob", ControlUnit = "Float",   Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
-    bool    = function(d) return {ControlType = "Button", ButtonType = "Toggle", PinStyle = "Both"} end,
-    enum    = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
-    ro      = function(d) return {ControlType = "Indicator", IndicatorType = "Text", PinStyle = "Output"} end,
-    trigger = function(d) return {ControlType = "Button", ButtonType = "Trigger", PinStyle = "Input"} end
+    int       = function(d) return {ControlType = "Knob", ControlUnit = "Integer", Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
+    float     = function(d) return {ControlType = "Knob", ControlUnit = "Float",   Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
+    text      = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
+    bool      = function(d) return {ControlType = "Button", ButtonType = "Toggle", PinStyle = "Both"} end,
+    enum      = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
+    ro        = function(d) return {ControlType = "Indicator", IndicatorType = "Text", PinStyle = "Output"} end,
+    led       = function(d) return {ControlType = "Indicator", IndicatorType = "Led", DefaultValue = false, PinStyle = "Output"} end,
+    status    = function(d) return {ControlType = "Indicator", IndicatorType = "Status", PinStyle = "Output"} end,
+    trigger   = function(d) return {ControlType = "Button", ButtonType = "Trigger", PinStyle = "Input"} end,
+    -- Momentary rather than Trigger so the lit state can follow <name>.state.
+    statetrig = function(d) return {ControlType = "Button", ButtonType = "Momentary", PinStyle = "Both"} end
   }
 
   local function EmitCamCtl(d)

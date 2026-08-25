@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.2.0.0",
-  BuildVersion = "1.2.0.0",
+  Version = "1.3.0.0",
+  BuildVersion = "1.3.0.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -42,7 +42,7 @@ Palette = {
 }
 
 -- Pages shown by the plugin
-PageNames = { "Setup", "Pan / Tilt / Zoom", "Imaging" }
+PageNames = { "Setup", "Pan / Tilt / Zoom", "Imaging", "Auto Framing", "IP Streams", "Status" }
 
 -- Registry of proxied camera controls (drives controls, layout and runtime)
 -- Registry of native camera controls this plugin proxies.
@@ -53,19 +53,42 @@ PageNames = { "Setup", "Pan / Tilt / Zoom", "Imaging" }
 --
 -- name    control name on the camera. Our plugin control carries the SAME name,
 --         so a pin lines up with the camera control it drives.
--- kind    int | float | bool | enum | ro | trigger
+-- kind    int | float | text | bool | enum | ro | led | status | trigger | statetrig
 --           int/float  numeric field drawn as a text box over a meter fill
+--           text       editable text field, no meter (used where the camera
+--                      exposes no range we can render a fill from)
 --           bool       green toggle, as the native block draws it
 --           enum       ComboBox; choices are mirrored from the camera
 --           ro         read-only readout; mirrors the camera's formatted String
+--           led        read-only boolean indicator
+--           status     read-only status bar (Q-SYS Status control)
 --           trigger    momentary; pulses the camera control
+--           statetrig  the camera's "State Trigger" pattern: pressing pulses
+--                      <name>.trigger, and the lit state follows <name>.state
 -- min/max REQUIRED for int and float -- a proxied control cannot report its own
 --         range (reading .Min raises), so it has to be declared here.
--- group   group box the control belongs to, in page order
--- col/row 1-based position within the group; col 1 is left, col 2 is right
+-- group   group box the control belongs to. Omitted means the layout places it
+--         by hand (the PTZ pad geometry is bespoke), but it is still declared
+--         and mirrored from here.
+-- col/row 1-based position within the group.
+-- x/w     optional overrides, relative to the group, for rows that do not fit
+--         the group's normal column grid.
 --
 -- Ranges below are for the NC-20x60.
 CamCtls = {
+  -- ===== Pan / Tilt / Zoom page (hand-placed inside bespoke group boxes) =====
+  {page = "Pan / Tilt / Zoom", name = "setup.pan.speed", pretty = "Pan-Tilt-Zoom~Pan Speed", label = "Pan Speed", kind = "float", min = 0.001, max = 1.0},
+  {page = "Pan / Tilt / Zoom", name = "setup.tilt.speed", pretty = "Pan-Tilt-Zoom~Tilt Speed", label = "Tilt Speed", kind = "float", min = 0.001, max = 1.0},
+  {page = "Pan / Tilt / Zoom", name = "setup.zoom.speed", pretty = "Pan-Tilt-Zoom~Zoom Speed", label = "Zoom Speed", kind = "float", min = 0.001, max = 1.0},
+  {page = "Pan / Tilt / Zoom", name = "aaaa.setup.snapshot.speed", pretty = "Pan-Tilt-Zoom~Recall Speed", label = "Recall Speed", kind = "float", min = 0.001, max = 1.0},
+  {page = "Pan / Tilt / Zoom", name = "setup.speed.by.zoom", pretty = "Pan-Tilt-Zoom~Speed By Zoom", label = "Speed By Zoom", kind = "bool"},
+  {page = "Pan / Tilt / Zoom", name = "ptz.recalibrate", pretty = "Pan-Tilt-Zoom~Recalibrate PTZ", label = "Recalibrate PTZ", kind = "trigger"},
+  {page = "Pan / Tilt / Zoom", name = "setup.ceiling.mount", pretty = "Pan-Tilt-Zoom~Ceiling Mount", label = "Ceiling Mount", kind = "bool"},
+  {page = "Pan / Tilt / Zoom", name = "move.completed", pretty = "Pan-Tilt-Zoom~Move Completed", label = "Move Completed", kind = "led"},
+  {page = "Pan / Tilt / Zoom", name = "setup.focus.speed", pretty = "Focus~Manual Speed", label = "Manual Speed", kind = "float", min = 0.001, max = 1.0},
+  {page = "Pan / Tilt / Zoom", name = "setup.focus.sensitivity", pretty = "Focus~AF Sensitivity", label = "AF Sensitivity", kind = "enum"},
+  {page = "Pan / Tilt / Zoom", name = "setup.focus.zone", pretty = "Focus~AF Zone", label = "AF Zone", kind = "enum"},
+
   -- ===== Imaging page =====
   {page = "Imaging", group = "Imaging", col = 1, row = 1,
    name = "img.brightness", pretty = "Imaging~Brightness", label = "Brightness", kind = "int", min = 0, max = 14},
@@ -126,17 +149,91 @@ CamCtls = {
   {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 4,
    name = "setup.hdmi.output.format", pretty = "Video Format~SDI/HDMI Format", label = "SDI/HDMI Format", kind = "enum"},
   {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 5,
-   name = "setup.sdi.level", pretty = "Video Format~SDI Level A/B", label = "SDI Level A/B", kind = "bool"}
+   name = "setup.sdi.level", pretty = "Video Format~SDI Level A/B", label = "SDI Level A/B", kind = "bool"},
+
+  -- ===== Auto Framing page =====
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 1,
+   name = "autoframe.enable", pretty = "Auto Framing~Enable", label = "Enable", kind = "bool"},
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 2,
+   name = "autoframe.padding", pretty = "Auto Framing~Frame Padding", label = "Frame Padding", kind = "int", min = 1, max = 15},
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 3,
+   name = "autoframe.deadband", pretty = "Auto Framing~Deadband", label = "Deadband", kind = "int", min = 1, max = 15},
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 4,
+   name = "autoframe.transition.speed", pretty = "Auto Framing~Transition Speed", label = "Transition Speed", kind = "enum"},
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 5,
+   name = "autoframe.face.count", pretty = "Auto Framing~Face Count Enable", label = "Face Count", kind = "bool"},
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 5, x = 316, w = 105,
+   name = "autoframe.facecount.display", pretty = "Auto Framing~Face Count", label = "", kind = "ro"},
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 6,
+   name = "autoframe.outline.face", pretty = "Auto Framing~Outline Faces Enable", label = "Outline Faces", kind = "bool"},
+
+  -- ===== IP Streams page (paired Preview / Mediacast columns) =====
+  {page = "IP Streams", group = "IP Streams", col = 1, row = 1, x = 216, w = 44,
+   name = "ip.streams.preview.enable", pretty = "IP Stream~Preview Stream Enable", label = "", kind = "bool"},
+  {page = "IP Streams", group = "IP Streams", col = 1, row = 2, rowlabel = "RTSP URL",
+   name = "ip.streams.preview.rtsp.url", pretty = "IP Stream~Preview Stream RTSP URL", label = "", kind = "ro"},
+  {page = "IP Streams", group = "IP Streams", col = 1, row = 3, rowlabel = "RTP Address",
+   name = "ip.streams.preview.rtp.address", pretty = "IP Stream~Preview Stream RTP Address", label = "", kind = "ro"},
+  {page = "IP Streams", group = "IP Streams", col = 2, row = 3,
+   name = "ip.streams.lbr.rtp.address", pretty = "IP Stream~Mediacast Stream RTP Address", label = "", kind = "ro"},
+  {page = "IP Streams", group = "IP Streams", col = 1, row = 4, rowlabel = "Streaming Mode", w = 88,
+   name = "ip.streams.preview.streaming.mode", pretty = "IP Stream~Preview Stream Streaming Mode", label = "", kind = "enum"},
+  -- No discoverable range for the frame rate, so it stays an editable text
+  -- field rather than a meter that would render an invented fill.
+  {page = "IP Streams", group = "IP Streams", col = 1, row = 4, x = 246, w = 44,
+   name = "ip.streams.preview.streaming.mode.fps", pretty = "IP Stream~Preview Stream Frame Rate", label = "", kind = "text"},
+  {page = "IP Streams", group = "IP Streams", col = 1, row = 5, rowlabel = "Video Format",
+   name = "ip.streams.preview.video.format", pretty = "IP Stream~Preview Stream Video Format", label = "", kind = "ro"},
+  {page = "IP Streams", group = "IP Streams", col = 2, row = 5,
+   name = "ip.streams.lbr.video.format", pretty = "IP Stream~Mediacast Stream Video Format", label = "", kind = "ro"},
+  {page = "IP Streams", group = "IP Streams", col = 1, row = 6, rowlabel = "Max Bitrate (Mbps)",
+   name = "ip.streams.preview.max.bitrate", pretty = "IP Stream~Preview Stream Max Bitrate", label = "", kind = "float", min = 0.5, max = 2.0},
+  {page = "IP Streams", group = "IP Streams", col = 2, row = 6,
+   name = "ip.streams.lbr.max.bitrate", pretty = "IP Stream~Mediacast Stream Max Bitrate", label = "", kind = "float", min = 1.0, max = 25.0},
+  {page = "IP Streams", group = "IP Streams", col = 2, row = 7, rowlabel = "Peak Frame Bitrate",
+   name = "peak.frame.bitrate", pretty = "IP Stream~Mediacast Stream Peak Frame Bitrate", label = "", kind = "int", min = 30, max = 120},
+
+  -- ===== Status page =====
+  {page = "Status", group = "Status", col = 1, row = 1,
+   name = "streaming.network", pretty = "Status~IP Streaming", label = "IP Streaming", kind = "led"},
+  {page = "Status", group = "Status", col = 1, row = 1, x = 380, w = 40,
+   name = "identify.state.trigger", pretty = "Status~Identify", label = "", kind = "statetrig"},
+  {page = "Status", group = "Status", col = 1, row = 2, x = 8, w = 18,
+   name = "camera.status.led", pretty = "Status~Status Indicator", label = "", kind = "led"},
+  {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387,
+   name = "camera.status", pretty = "Status~Status Bar", label = "", kind = "status"},
+
+  {page = "Status", group = "Network", col = 1, row = 1,
+   name = "ip.address", pretty = "Status~Network IP Address", label = "IP Address", kind = "ro"},
+  {page = "Status", group = "Network", col = 1, row = 2,
+   name = "network.flow.control", pretty = "Status~Network Flow Control", label = "Flow Control", kind = "bool"},
+  {page = "Status", group = "Network", col = 1, row = 3,
+   name = "multislice.toggle", pretty = "Status~Network Traffic Shaping", label = "Traffic Shaping", kind = "bool"},
+
+  {page = "Status", group = "Hardware Details", col = 1, row = 1,
+   name = "textc.model", pretty = "Status~HW Model", label = "Model", kind = "ro"},
+  {page = "Status", group = "Hardware Details", col = 1, row = 2,
+   name = "textc.mac", pretty = "Status~HW MAC Address", label = "MAC Address", kind = "ro"},
+  {page = "Status", group = "Hardware Details", col = 1, row = 3,
+   name = "textc.serial", pretty = "Status~HW S/N", label = "Serial Number", kind = "ro"}
 }
 
--- Group boxes in the order they stack down each page, and whether the group
--- uses the two-column split or a single right-aligned column.
+-- Group boxes in the order they stack down each page.
+--   cols2  label + control in each of two columns (the default)
+--   cols1  one right-aligned label column, control to its right
+--   pairs  row label at left, then a Preview and a Mediacast column
 CamGroups = {
-  {page = "Imaging", name = "Imaging",         rows = 2, cols = 2},
-  {page = "Imaging", name = "Exposure",        rows = 6, cols = 2},
-  {page = "Imaging", name = "White Balance",   rows = 5, cols = 2},
-  {page = "Imaging", name = "Noise Reduction", rows = 1, cols = 2},
-  {page = "Imaging", name = "SDI/HDMI Format", rows = 5, cols = 1}
+  {page = "Imaging",      name = "Imaging",         rows = 2, style = "cols2"},
+  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2"},
+  {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2"},
+  {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2"},
+  {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1"},
+  {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
+  {page = "IP Streams",   name = "IP Streams",      rows = 7, style = "pairs",
+   headers = {"Preview Stream", "Mediacast Stream"}},
+  {page = "Status",       name = "Status",           rows = 2, style = "cols1"},
+  {page = "Status",       name = "Network",          rows = 3, style = "cols1"},
+  {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1"}
 }
 
 -- Page-level trigger buttons that sit above the first group box.
@@ -145,7 +242,7 @@ CamPageTriggers = {
    label = "Reset all Camera settings (Imaging, PTZ, and Focus)"}
 }
 
--- Fast lookup by control name, and the subset needing each treatment.
+-- Fast lookup by control name.
 CamCtlByName = {}
 for _, d in ipairs(CamCtls) do CamCtlByName[d.name] = d end
 for _, t in ipairs(CamPageTriggers) do
@@ -417,12 +514,17 @@ function GetControls(props)
     -- Emitted from the registry so a control is declared exactly once. Each keeps
     -- the camera's own control name, so the pin lines up with what it drives.
     local KIND_DEF = {
-      int     = function(d) return {ControlType = "Knob", ControlUnit = "Integer", Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
-      float   = function(d) return {ControlType = "Knob", ControlUnit = "Float",   Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
-      bool    = function(d) return {ControlType = "Button", ButtonType = "Toggle", PinStyle = "Both"} end,
-      enum    = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
-      ro      = function(d) return {ControlType = "Indicator", IndicatorType = "Text", PinStyle = "Output"} end,
-      trigger = function(d) return {ControlType = "Button", ButtonType = "Trigger", PinStyle = "Input"} end
+      int       = function(d) return {ControlType = "Knob", ControlUnit = "Integer", Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
+      float     = function(d) return {ControlType = "Knob", ControlUnit = "Float",   Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
+      text      = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
+      bool      = function(d) return {ControlType = "Button", ButtonType = "Toggle", PinStyle = "Both"} end,
+      enum      = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
+      ro        = function(d) return {ControlType = "Indicator", IndicatorType = "Text", PinStyle = "Output"} end,
+      led       = function(d) return {ControlType = "Indicator", IndicatorType = "Led", DefaultValue = false, PinStyle = "Output"} end,
+      status    = function(d) return {ControlType = "Indicator", IndicatorType = "Status", PinStyle = "Output"} end,
+      trigger   = function(d) return {ControlType = "Button", ButtonType = "Trigger", PinStyle = "Input"} end,
+      -- Momentary rather than Trigger so the lit state can follow <name>.state.
+      statetrig = function(d) return {ControlType = "Button", ButtonType = "Momentary", PinStyle = "Both"} end
     }
   
     local function EmitCamCtl(d)
@@ -486,7 +588,10 @@ function GetControlLayout(props)
     local focusX = zoomX + hB + 8
     local hpX    = focusX + hB + 4
     local hpLblW, hpIcon, hpSaveW = 46, 28, 46
-    local ptzGH  = 30 + 3 * hB + 14 + 30   -- extra row for the Coordinates readout
+    -- Pad rows, then Coordinates, then two columns of setup rows and speeds.
+    local ptzRow0 = 202          -- first row of the two-column block
+    local ptzRowH = 24
+    local ptzGH   = (ptzRow0 + 4 * ptzRowH + 8) - ptzGY
   
     if CurrentPage == "Setup" then
   
@@ -626,10 +731,6 @@ function GetControlLayout(props)
       layout["ptz_focus_out"] = {PrettyName = "Focus~Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {focusX, padY + hB},     Size = {hB, hB}}
       layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {focusX, padY + 2 * hB}, Size = {hB, hB}}
   
-      -- Is Moving status LED
-      table.insert(graphics, {Type = "Text", Text = "Moving", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {ptzGX + 12, padY + 70}, Size = {50, h1}})
-      layout["is_moving"] = {PrettyName = "Pan-Tilt-Zoom~Is Moving", Style = "Indicator", Color = Palette.cti_amber, OffColor = {60, 46, 16}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2, Position = {ptzGX + 64, padY + 70}, Size = {18, 18}}
-  
       -- Home / Privacy (icon + red save, as on the native camera)
       local homeY = padY + 6
       local privY = padY + hB + 14
@@ -646,10 +747,77 @@ function GetControlLayout(props)
       table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {ptzGX + 12, coordsY + 2}, Size = {90, h1}})
       layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {padX, coordsY}, Size = {200, 22}}
   
+      -- Two columns of proxied setup rows: toggles on the left, speeds on the
+      -- right. Rendered here rather than from CamGroups because this group's
+      -- geometry is bespoke (the 3x3 pad sits above it).
+      local function PtzLabel(x, y, w, text)
+        table.insert(graphics, {Type = "Text", Text = text, FontSize = fs1,
+          HTextAlign = "Right", Color = Palette.cti_navy, Position = {x, y + 2}, Size = {w, h1}})
+      end
+      local function PtzBool(name, pretty, y, x)
+        layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
+          Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+          Margin = 3, Position = {x, y}, Size = {44, 22}}
+      end
+      local function PtzMeter(name, pretty, y, x, w)
+        layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fs1,
+          HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
+          UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+          Position = {x, y}, Size = {w, 22}}
+      end
+      local function PtzLed(name, pretty, y, x)
+        layout[name] = {PrettyName = pretty, Style = "Indicator", Color = Palette.Green,
+          OffColor = {16, 40, 24}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2,
+          Position = {x, y + 2}, Size = {18, 18}}
+      end
+  
+      local lc, rc = 8, 196          -- left / right label columns
+      local lcW, rcW = 104, 106
+      local lcX, rcX = 116, 306      -- where each column's control starts
+  
+      local r = ptzRow0
+      PtzLabel(lc, r, lcW, "Speed By Zoom");  PtzBool("setup.speed.by.zoom", "Pan-Tilt-Zoom~Speed By Zoom", r, lcX)
+      PtzLabel(rc, r, rcW, "Pan Speed");      PtzMeter("setup.pan.speed", "Pan-Tilt-Zoom~Pan Speed", r, rcX, 117)
+      r = r + ptzRowH
+      PtzLabel(lc, r, lcW, "Recalibrate PTZ")
+      layout["ptz.recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
+        Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+        Margin = 3, Position = {lcX, r}, Size = {44, 22}}
+      PtzLabel(rc, r, rcW, "Tilt Speed");     PtzMeter("setup.tilt.speed", "Pan-Tilt-Zoom~Tilt Speed", r, rcX, 117)
+      r = r + ptzRowH
+      PtzLabel(lc, r, lcW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, lcX)
+      PtzLabel(rc, r, rcW, "Zoom Speed");     PtzMeter("setup.zoom.speed", "Pan-Tilt-Zoom~Zoom Speed", r, rcX, 117)
+      r = r + ptzRowH
+      PtzLabel(lc, r, 64, "Is Moving");       PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, 76)
+      PtzLabel(98, r, 96, "Move Completed");  PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, 198)
+      PtzLabel(rc + 26, r, 80, "Recall Speed"); PtzMeter("aaaa.setup.snapshot.speed", "Pan-Tilt-Zoom~Recall Speed", r, rcX, 117)
+  
+      -- Focus group -------------------------------------------------------------
+      local focusTop = ptzGY + ptzGH + 12
+      local focusGH  = 26 + 3 * ptzRowH + 8
+      table.insert(graphics, {
+        Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
+        Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+        CornerRadius = 8, Position = {0, focusTop}, Size = {PLUGIN_W, focusGH}
+      })
+      local fy = focusTop + 26
+      PtzLabel(8, fy, 140, "Manual Speed")
+      PtzMeter("setup.focus.speed", "Focus~Manual Speed", fy, 152, 271)
+      fy = fy + ptzRowH
+      PtzLabel(8, fy, 140, "AF Sensitivity")
+      layout["setup.focus.sensitivity"] = {PrettyName = "Focus~AF Sensitivity", Style = "ComboBox",
+        FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
+        StrokeWidth = 1, Position = {152, fy}, Size = {271, 22}}
+      fy = fy + ptzRowH
+      PtzLabel(8, fy, 140, "AF Zone")
+      layout["setup.focus.zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
+        FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
+        StrokeWidth = 1, Position = {152, fy}, Size = {271, 22}}
+  
       -- Presets group (right column, under the PTZ block; single row of presets)
       if NumPresets > 0 then
         local presetGX  = ptzGX
-        local presetTop = ptzGY + ptzGH + 14
+        local presetTop = focusTop + focusGH + 12
         local btnX0     = presetGX + 12
         local btnRow    = presetTop + 28
         local presetGW  = PLUGIN_W
@@ -679,8 +847,10 @@ function GetControlLayout(props)
         end
       end
   
-    elseif CurrentPage == "Imaging" then
+    else
   
+      -- Every remaining page (Imaging, Auto Framing, IP Streams, Status) is
+      -- rendered entirely from the registry.
       -- Group boxes and rows are rendered from the CamCtls registry, so the page
       -- is defined by data rather than by positions repeated per control.
       local rowStep = 26
@@ -717,14 +887,27 @@ function GetControlLayout(props)
             HTextAlign = "Center", Color = Palette.meter_off, OffColor = Palette.meter_off,
             UnlinkOffColor = true, TextColor = Palette.Gray, Padding = 2, StrokeWidth = 1,
             Position = {x, y}, Size = {w, ctlH}}
+        elseif d.kind == "text" then
+          layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+            HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White,
+            UnlinkOffColor = true, Padding = 2, StrokeWidth = 1,
+            Position = {x, y}, Size = {w, ctlH}}
+        elseif d.kind == "status" then
+          layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+            HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
+            Position = {x, y}, Size = {w, ctlH}}
+        elseif d.kind == "led" then
+          layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
+            Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true,
+            StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
         elseif d.kind == "bool" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
             Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
             Margin = 3, Position = {x, y}, Size = {44, ctlH}}
-        elseif d.kind == "trigger" then
+        elseif d.kind == "trigger" or d.kind == "statetrig" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
             Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-            Margin = 3, Position = {x, y}, Size = {44, ctlH}}
+            Margin = 3, Position = {x, y}, Size = {math.min(w, 44), ctlH}}
         end
       end
   
@@ -752,6 +935,11 @@ function GetControlLayout(props)
         end
       end
   
+      -- Paired-column geometry, used by the IP Streams table.
+      local pLblW = 140
+      local pColW = 138
+      local function PairX(c) return 8 + pLblW + 4 + (c - 1) * (pColW + 4) end
+  
       for _, g in ipairs(CamGroups) do
         if g.page == CurrentPage then
           local gh = 26 + g.rows * rowStep + 8
@@ -760,16 +948,31 @@ function GetControlLayout(props)
             Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
             CornerRadius = 8, Position = {0, y}, Size = {PLUGIN_W, gh}
           })
+          -- Column headings above a paired table.
+          if g.headers then
+            for c, text in ipairs(g.headers) do
+              table.insert(graphics, {
+                Type = "Text", Text = text, FontSize = fs1, FontStyle = "Bold",
+                HTextAlign = "Center", Color = Palette.cti_navy,
+                Position = {PairX(c), y + 26}, Size = {pColW, h1}
+              })
+            end
+          end
           for _, d in ipairs(CamCtls) do
             if d.page == CurrentPage and d.group == g.name then
               local ry = y + 26 + (d.row - 1) * rowStep
-              if g.cols == 1 then
-                PlaceLabel(8, ry, lblW1, d.label)
-                PlaceCtl(d, 8 + lblW1 + 12, ry, PLUGIN_W - (8 + lblW1 + 12) - 12)
+              if g.style == "pairs" then
+                if d.rowlabel then PlaceLabel(8, ry, pLblW, d.rowlabel) end
+                local x = d.x and (d.x) or PairX(d.col)
+                PlaceCtl(d, x, ry, d.w or pColW)
+              elseif g.style == "cols1" then
+                if d.label ~= "" then PlaceLabel(8, ry, lblW1, d.label) end
+                local x = d.x or (8 + lblW1 + 12)
+                PlaceCtl(d, x, ry, d.w or (PLUGIN_W - (8 + lblW1 + 12) - 12))
               else
                 local x = ColX(d.col)
-                PlaceLabel(x, ry, lblW2, d.label)
-                PlaceCtl(d, x + lblW2 + 4, ry, colW - lblW2 - 4)
+                if d.label ~= "" then PlaceLabel(x, ry, lblW2, d.label) end
+                PlaceCtl(d, d.x or (x + lblW2 + 4), ry, d.w or (colW - lblW2 - 4))
               end
             end
           end
@@ -933,10 +1136,30 @@ if Controls then
           if (ch == nil or #ch == 0) and d.name == WB_MODE then ch = WB_MODE_CHOICES end
           ctl.Choices = ch or {}
           if s ~= nil and ctl.String ~= s then ctl.String = s end
-        elseif d.kind == "ro" then
+        elseif d.kind == "ro" or d.kind == "text" then
           -- Aperture, Shutter and friends already arrive formatted (f/1.8, 1/60).
           local s; pcall(function() s = cam[d.name].String end)
           if s ~= nil and ctl.String ~= s then ctl.String = s end
+        elseif d.kind == "led" then
+          local v; pcall(function() v = cam[d.name].Boolean end)
+          if v ~= nil and ctl.Boolean ~= v then ctl.Boolean = v end
+        elseif d.kind == "status" then
+          local s, v
+          pcall(function() s = cam[d.name].String end)
+          pcall(function() v = cam[d.name].Value end)
+          if s ~= nil and ctl.String ~= s then ctl.String = s end
+          if v ~= nil and ctl.Value ~= v then ctl.Value = v end
+        elseif d.kind == "statetrig" then
+          -- The camera's State Trigger pattern: lit state lives on a .state
+          -- sibling when there is one, otherwise on the control itself.
+          local v
+          local st = d.name .. ".state"
+          if HasControl(cam, st) then
+            pcall(function() v = cam[st].Boolean end)
+          else
+            pcall(function() v = cam[d.name].Boolean end)
+          end
+          if v ~= nil and ctl.Boolean ~= v then ctl.Boolean = v end
         end
       end
       -- Grey-out follows the camera. A control it does not expose, and every
@@ -1555,18 +1778,27 @@ if Controls then
       if d.kind == "trigger" then PulseCtl(d.name) return end
       local cam = ActiveCam()
       if cam == nil or not HasControl(cam, d.name) then return end
+      if d.kind == "statetrig" then
+        -- Momentary, so only the press is a request -- the low edge is our own
+        -- feedback write settling and must not fire the camera again.
+        if not c.Boolean then return end
+        local trig = d.name .. ".trigger"
+        if HasControl(cam, trig) then PulseCtl(trig) else PulseCtl(d.name) end
+        return
+      end
       if d.kind == "int" or d.kind == "float" then
         pcall(function() if cam[d.name].Value ~= c.Value then cam[d.name].Value = c.Value end end)
       elseif d.kind == "bool" then
         pcall(function() if cam[d.name].Boolean ~= c.Boolean then cam[d.name].Boolean = c.Boolean end end)
-      elseif d.kind == "enum" then
+      elseif d.kind == "enum" or d.kind == "text" then
         pcall(function() if cam[d.name].String ~= c.String then cam[d.name].String = c.String end end)
       end
     end
   
+    local READ_ONLY_KIND = {ro = true, led = true, status = true}
     for _, d in ipairs(CamCtls) do
       local ctl = Controls[d.name]
-      if ctl ~= nil and d.kind ~= "ro" then
+      if ctl ~= nil and not READ_ONLY_KIND[d.kind] then
         ctl.EventHandler = function(c) WriteOut(d, c) end
       end
     end

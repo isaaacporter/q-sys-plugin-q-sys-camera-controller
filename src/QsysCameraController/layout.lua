@@ -29,7 +29,10 @@
   local focusX = zoomX + hB + 8
   local hpX    = focusX + hB + 4
   local hpLblW, hpIcon, hpSaveW = 46, 28, 46
-  local ptzGH  = 30 + 3 * hB + 14 + 30   -- extra row for the Coordinates readout
+  -- Pad rows, then Coordinates, then two columns of setup rows and speeds.
+  local ptzRow0 = 202          -- first row of the two-column block
+  local ptzRowH = 24
+  local ptzGH   = (ptzRow0 + 4 * ptzRowH + 8) - ptzGY
 
   if CurrentPage == "Setup" then
 
@@ -169,10 +172,6 @@
     layout["ptz_focus_out"] = {PrettyName = "Focus~Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {focusX, padY + hB},     Size = {hB, hB}}
     layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {focusX, padY + 2 * hB}, Size = {hB, hB}}
 
-    -- Is Moving status LED
-    table.insert(graphics, {Type = "Text", Text = "Moving", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {ptzGX + 12, padY + 70}, Size = {50, h1}})
-    layout["is_moving"] = {PrettyName = "Pan-Tilt-Zoom~Is Moving", Style = "Indicator", Color = Palette.cti_amber, OffColor = {60, 46, 16}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2, Position = {ptzGX + 64, padY + 70}, Size = {18, 18}}
-
     -- Home / Privacy (icon + red save, as on the native camera)
     local homeY = padY + 6
     local privY = padY + hB + 14
@@ -189,10 +188,77 @@
     table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {ptzGX + 12, coordsY + 2}, Size = {90, h1}})
     layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {padX, coordsY}, Size = {200, 22}}
 
+    -- Two columns of proxied setup rows: toggles on the left, speeds on the
+    -- right. Rendered here rather than from CamGroups because this group's
+    -- geometry is bespoke (the 3x3 pad sits above it).
+    local function PtzLabel(x, y, w, text)
+      table.insert(graphics, {Type = "Text", Text = text, FontSize = fs1,
+        HTextAlign = "Right", Color = Palette.cti_navy, Position = {x, y + 2}, Size = {w, h1}})
+    end
+    local function PtzBool(name, pretty, y, x)
+      layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
+        Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+        Margin = 3, Position = {x, y}, Size = {44, 22}}
+    end
+    local function PtzMeter(name, pretty, y, x, w)
+      layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fs1,
+        HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
+        UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+        Position = {x, y}, Size = {w, 22}}
+    end
+    local function PtzLed(name, pretty, y, x)
+      layout[name] = {PrettyName = pretty, Style = "Indicator", Color = Palette.Green,
+        OffColor = {16, 40, 24}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2,
+        Position = {x, y + 2}, Size = {18, 18}}
+    end
+
+    local lc, rc = 8, 196          -- left / right label columns
+    local lcW, rcW = 104, 106
+    local lcX, rcX = 116, 306      -- where each column's control starts
+
+    local r = ptzRow0
+    PtzLabel(lc, r, lcW, "Speed By Zoom");  PtzBool("setup.speed.by.zoom", "Pan-Tilt-Zoom~Speed By Zoom", r, lcX)
+    PtzLabel(rc, r, rcW, "Pan Speed");      PtzMeter("setup.pan.speed", "Pan-Tilt-Zoom~Pan Speed", r, rcX, 117)
+    r = r + ptzRowH
+    PtzLabel(lc, r, lcW, "Recalibrate PTZ")
+    layout["ptz.recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
+      Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+      Margin = 3, Position = {lcX, r}, Size = {44, 22}}
+    PtzLabel(rc, r, rcW, "Tilt Speed");     PtzMeter("setup.tilt.speed", "Pan-Tilt-Zoom~Tilt Speed", r, rcX, 117)
+    r = r + ptzRowH
+    PtzLabel(lc, r, lcW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, lcX)
+    PtzLabel(rc, r, rcW, "Zoom Speed");     PtzMeter("setup.zoom.speed", "Pan-Tilt-Zoom~Zoom Speed", r, rcX, 117)
+    r = r + ptzRowH
+    PtzLabel(lc, r, 64, "Is Moving");       PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, 76)
+    PtzLabel(98, r, 96, "Move Completed");  PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, 198)
+    PtzLabel(rc + 26, r, 80, "Recall Speed"); PtzMeter("aaaa.setup.snapshot.speed", "Pan-Tilt-Zoom~Recall Speed", r, rcX, 117)
+
+    -- Focus group -------------------------------------------------------------
+    local focusTop = ptzGY + ptzGH + 12
+    local focusGH  = 26 + 3 * ptzRowH + 8
+    table.insert(graphics, {
+      Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
+      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+      CornerRadius = 8, Position = {0, focusTop}, Size = {PLUGIN_W, focusGH}
+    })
+    local fy = focusTop + 26
+    PtzLabel(8, fy, 140, "Manual Speed")
+    PtzMeter("setup.focus.speed", "Focus~Manual Speed", fy, 152, 271)
+    fy = fy + ptzRowH
+    PtzLabel(8, fy, 140, "AF Sensitivity")
+    layout["setup.focus.sensitivity"] = {PrettyName = "Focus~AF Sensitivity", Style = "ComboBox",
+      FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
+      StrokeWidth = 1, Position = {152, fy}, Size = {271, 22}}
+    fy = fy + ptzRowH
+    PtzLabel(8, fy, 140, "AF Zone")
+    layout["setup.focus.zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
+      FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
+      StrokeWidth = 1, Position = {152, fy}, Size = {271, 22}}
+
     -- Presets group (right column, under the PTZ block; single row of presets)
     if NumPresets > 0 then
       local presetGX  = ptzGX
-      local presetTop = ptzGY + ptzGH + 14
+      local presetTop = focusTop + focusGH + 12
       local btnX0     = presetGX + 12
       local btnRow    = presetTop + 28
       local presetGW  = PLUGIN_W
@@ -222,8 +288,10 @@
       end
     end
 
-  elseif CurrentPage == "Imaging" then
+  else
 
+    -- Every remaining page (Imaging, Auto Framing, IP Streams, Status) is
+    -- rendered entirely from the registry.
     -- Group boxes and rows are rendered from the CamCtls registry, so the page
     -- is defined by data rather than by positions repeated per control.
     local rowStep = 26
@@ -260,14 +328,27 @@
           HTextAlign = "Center", Color = Palette.meter_off, OffColor = Palette.meter_off,
           UnlinkOffColor = true, TextColor = Palette.Gray, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
+      elseif d.kind == "text" then
+        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+          HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White,
+          UnlinkOffColor = true, Padding = 2, StrokeWidth = 1,
+          Position = {x, y}, Size = {w, ctlH}}
+      elseif d.kind == "status" then
+        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+          HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
+          Position = {x, y}, Size = {w, ctlH}}
+      elseif d.kind == "led" then
+        layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
+          Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true,
+          StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
       elseif d.kind == "bool" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
           Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
           Margin = 3, Position = {x, y}, Size = {44, ctlH}}
-      elseif d.kind == "trigger" then
+      elseif d.kind == "trigger" or d.kind == "statetrig" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
           Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-          Margin = 3, Position = {x, y}, Size = {44, ctlH}}
+          Margin = 3, Position = {x, y}, Size = {math.min(w, 44), ctlH}}
       end
     end
 
@@ -295,6 +376,11 @@
       end
     end
 
+    -- Paired-column geometry, used by the IP Streams table.
+    local pLblW = 140
+    local pColW = 138
+    local function PairX(c) return 8 + pLblW + 4 + (c - 1) * (pColW + 4) end
+
     for _, g in ipairs(CamGroups) do
       if g.page == CurrentPage then
         local gh = 26 + g.rows * rowStep + 8
@@ -303,16 +389,31 @@
           Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
           CornerRadius = 8, Position = {0, y}, Size = {PLUGIN_W, gh}
         })
+        -- Column headings above a paired table.
+        if g.headers then
+          for c, text in ipairs(g.headers) do
+            table.insert(graphics, {
+              Type = "Text", Text = text, FontSize = fs1, FontStyle = "Bold",
+              HTextAlign = "Center", Color = Palette.cti_navy,
+              Position = {PairX(c), y + 26}, Size = {pColW, h1}
+            })
+          end
+        end
         for _, d in ipairs(CamCtls) do
           if d.page == CurrentPage and d.group == g.name then
             local ry = y + 26 + (d.row - 1) * rowStep
-            if g.cols == 1 then
-              PlaceLabel(8, ry, lblW1, d.label)
-              PlaceCtl(d, 8 + lblW1 + 12, ry, PLUGIN_W - (8 + lblW1 + 12) - 12)
+            if g.style == "pairs" then
+              if d.rowlabel then PlaceLabel(8, ry, pLblW, d.rowlabel) end
+              local x = d.x and (d.x) or PairX(d.col)
+              PlaceCtl(d, x, ry, d.w or pColW)
+            elseif g.style == "cols1" then
+              if d.label ~= "" then PlaceLabel(8, ry, lblW1, d.label) end
+              local x = d.x or (8 + lblW1 + 12)
+              PlaceCtl(d, x, ry, d.w or (PLUGIN_W - (8 + lblW1 + 12) - 12))
             else
               local x = ColX(d.col)
-              PlaceLabel(x, ry, lblW2, d.label)
-              PlaceCtl(d, x + lblW2 + 4, ry, colW - lblW2 - 4)
+              if d.label ~= "" then PlaceLabel(x, ry, lblW2, d.label) end
+              PlaceCtl(d, d.x or (x + lblW2 + 4), ry, d.w or (colW - lblW2 - 4))
             end
           end
         end

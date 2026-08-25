@@ -17,4 +17,4 @@ Palette = {
 }
 
 -- Pages shown by the plugin
-PageNames = { "Setup", "Pan / Tilt / Zoom", "Imaging" }
+PageNames = { "Setup", "Pan / Tilt / Zoom", "Imaging", "Auto Framing", "IP Streams", "Status" }

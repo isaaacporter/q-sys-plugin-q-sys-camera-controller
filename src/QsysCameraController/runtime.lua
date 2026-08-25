@@ -148,10 +148,30 @@
         if (ch == nil or #ch == 0) and d.name == WB_MODE then ch = WB_MODE_CHOICES end
         ctl.Choices = ch or {}
         if s ~= nil and ctl.String ~= s then ctl.String = s end
-      elseif d.kind == "ro" then
+      elseif d.kind == "ro" or d.kind == "text" then
         -- Aperture, Shutter and friends already arrive formatted (f/1.8, 1/60).
         local s; pcall(function() s = cam[d.name].String end)
         if s ~= nil and ctl.String ~= s then ctl.String = s end
+      elseif d.kind == "led" then
+        local v; pcall(function() v = cam[d.name].Boolean end)
+        if v ~= nil and ctl.Boolean ~= v then ctl.Boolean = v end
+      elseif d.kind == "status" then
+        local s, v
+        pcall(function() s = cam[d.name].String end)
+        pcall(function() v = cam[d.name].Value end)
+        if s ~= nil and ctl.String ~= s then ctl.String = s end
+        if v ~= nil and ctl.Value ~= v then ctl.Value = v end
+      elseif d.kind == "statetrig" then
+        -- The camera's State Trigger pattern: lit state lives on a .state
+        -- sibling when there is one, otherwise on the control itself.
+        local v
+        local st = d.name .. ".state"
+        if HasControl(cam, st) then
+          pcall(function() v = cam[st].Boolean end)
+        else
+          pcall(function() v = cam[d.name].Boolean end)
+        end
+        if v ~= nil and ctl.Boolean ~= v then ctl.Boolean = v end
       end
     end
     -- Grey-out follows the camera. A control it does not expose, and every
@@ -770,18 +790,27 @@
     if d.kind == "trigger" then PulseCtl(d.name) return end
     local cam = ActiveCam()
     if cam == nil or not HasControl(cam, d.name) then return end
+    if d.kind == "statetrig" then
+      -- Momentary, so only the press is a request -- the low edge is our own
+      -- feedback write settling and must not fire the camera again.
+      if not c.Boolean then return end
+      local trig = d.name .. ".trigger"
+      if HasControl(cam, trig) then PulseCtl(trig) else PulseCtl(d.name) end
+      return
+    end
     if d.kind == "int" or d.kind == "float" then
       pcall(function() if cam[d.name].Value ~= c.Value then cam[d.name].Value = c.Value end end)
     elseif d.kind == "bool" then
       pcall(function() if cam[d.name].Boolean ~= c.Boolean then cam[d.name].Boolean = c.Boolean end end)
-    elseif d.kind == "enum" then
+    elseif d.kind == "enum" or d.kind == "text" then
       pcall(function() if cam[d.name].String ~= c.String then cam[d.name].String = c.String end end)
     end
   end
 
+  local READ_ONLY_KIND = {ro = true, led = true, status = true}
   for _, d in ipairs(CamCtls) do
     local ctl = Controls[d.name]
-    if ctl ~= nil and d.kind ~= "ro" then
+    if ctl ~= nil and not READ_ONLY_KIND[d.kind] then
       ctl.EventHandler = function(c) WriteOut(d, c) end
     end
   end
