@@ -49,6 +49,10 @@
   local PRIVACY_TOGGLE = "toggle.privacy"
   -- Auto white balance mode (a ComboBox on the native camera).
   local WB_MODE = "wb.awb.mode"
+  -- Component.GetControls() does not report Choices, and the live proxy may not
+  -- either. Fall back to the camera's known modes so the combo is never empty
+  -- while a camera is bound.
+  local WB_MODE_CHOICES = {"Auto", "Manual", "One Push"}
   -- Integer value fields mirrored to/from the active camera. The plugin control
   -- and the camera control share a name, so one list drives both directions.
   local NUM_MIRROR = {"img.brightness", "exp.comp"}
@@ -134,11 +138,15 @@
     local ctl = Controls[WB_MODE]
     if ctl == nil then return end
     local cam = ActiveCam()
-    local choices, value = nil, ""
+    local choices, value, bound = nil, "", false
     if cam and HasControl(cam, WB_MODE) then
+      bound = true
       pcall(function() choices = cam[WB_MODE].Choices end)
       pcall(function() value = cam[WB_MODE].String or "" end)
     end
+    -- Only substitute the known list when a camera is actually bound; with no
+    -- camera the combo stays empty rather than offering modes that go nowhere.
+    if bound and (choices == nil or #choices == 0) then choices = WB_MODE_CHOICES end
     WbModeFbSuppress = true
     ctl.Choices = choices or {}
     if ctl.String ~= value then ctl.String = value end
