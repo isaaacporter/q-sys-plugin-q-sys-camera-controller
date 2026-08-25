@@ -69,6 +69,13 @@
   local NumFbSuppress = {}         -- [name] = true while writing that value field
   local NumBoundCam = {}           -- [name] = camera currently subscribed
 
+  -- Controls whose enabled state follows the camera's own: the native block
+  -- greys out Aperture when Exposure Mode is Auto, the manual gains when AWB
+  -- Mode is Auto, and so on. IsDisabled is readable on a proxied control but
+  -- changing it fires no event, so this is refreshed on bind, whenever a mode
+  -- control changes, and on a slow timer as a backstop.
+  local DISABLE_MIRROR = {"img.brightness", "exp.comp", "wb.awb.mode", "wb.one.push.trigger"}
+
   local RouterProxy = nil         -- bound router component, or nil
   local RouterBoundCtl = nil      -- the router control we are subscribed to
   local RouterCtlNames = {}       -- control names present on the bound router
@@ -172,6 +179,29 @@
   local function UpdateAllNumsNow()
     for _, n in ipairs(NUM_MIRROR) do UpdateNumNow(n) end
   end
+
+  -- Mirror the camera's own enabled state. A control the active camera does not
+  -- expose -- or any control while no camera is bound -- is disabled, which is
+  -- how the native block shows a setting that does not apply.
+  local function RefreshDisabled()
+    local cam = ActiveCam()
+    for _, n in ipairs(DISABLE_MIRROR) do
+      local ctl = Controls[n]
+      if ctl ~= nil then
+        local want = true
+        if cam ~= nil and HasControl(cam, n) then
+          local ok, v = pcall(function() return cam[n].IsDisabled end)
+          if ok and v ~= nil then want = v else want = false end
+        end
+        if ctl.IsDisabled ~= want then ctl.IsDisabled = want end
+      end
+    end
+  end
+
+  -- IsDisabled raises no event, so poll slowly to catch changes driven by
+  -- controls the plugin has not subscribed to.
+  local DisabledTimer = Timer.New()
+  DisabledTimer.EventHandler = function() RefreshDisabled() end
 
   -- ===== Preset store (per camera component name) =====
   -- Persisted as JSON in the hidden "preset_store" control so it survives core
@@ -380,7 +410,8 @@
       end
       if HasControl(cam, WB_MODE) then
         pcall(function()
-          cam[WB_MODE].EventHandler = function() UpdateWbModeNow() end
+          -- A mode change is what drives most of the camera's grey-out logic.
+          cam[WB_MODE].EventHandler = function() UpdateWbModeNow(); RefreshDisabled() end
         end)
         WbBoundCam = cam
       end
@@ -408,6 +439,7 @@
     UpdatePrivacyNow()
     UpdateWbModeNow()
     UpdateAllNumsNow()
+    RefreshDisabled()
     CheckCamera()
     UpdatePresetHighlights()
   end
@@ -824,6 +856,7 @@
   end
 
   -- ===== Initialise =====
+  DisabledTimer:Start(3)
   LoadStore()
   RefreshCameraLists()
 
