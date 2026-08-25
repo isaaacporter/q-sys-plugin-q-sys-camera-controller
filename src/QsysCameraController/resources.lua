@@ -17,4 +17,4 @@ Palette = {
 }
 
 -- Pages shown by the plugin
-PageNames = { "Control", "Imaging" }
+PageNames = { "Setup", "Pan / Tilt / Zoom", "Imaging" }
