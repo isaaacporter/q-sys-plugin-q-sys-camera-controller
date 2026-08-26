@@ -51,7 +51,7 @@
     -- Camera selection group -------------------------------------------------
     table.insert(graphics, {
       Type = "GroupBox", Text = "Cameras", FontSize = fs1, HTextAlign = "Left",
-      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+      StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {camGX, camGY}, Size = {camGW, camGH}
     })
 
@@ -92,7 +92,7 @@
 
     table.insert(graphics, {
       Type = "GroupBox", Text = "Camera Router (Optional)", FontSize = fs1, HTextAlign = "Left",
-      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+      StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {0, trackTop}, Size = {PLUGIN_W, 92}
     })
     table.insert(graphics, {Type = "Text", Text = "Router", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {12, tY + 3}, Size = {48, h1}})
@@ -121,7 +121,7 @@
     -- Pan / Tilt / Zoom group ------------------------------------------------
     table.insert(graphics, {
       Type = "GroupBox", Text = "Pan / Tilt / Zoom", FontSize = fs1,
-      HTextAlign = "Left", Fill = Palette.White, StrokeColor = Palette.cti_navy,
+      HTextAlign = "Left", StrokeColor = Palette.Black,
       StrokeWidth = 1, CornerRadius = 8,
       Position = {ptzGX, ptzGY}, Size = {ptzGW, ptzGH}
     })
@@ -238,7 +238,7 @@
     local focusGH  = 26 + 3 * ptzRowH + 8
     table.insert(graphics, {
       Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
-      Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+      StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {0, focusTop}, Size = {PLUGIN_W, focusGH}
     })
     local fy = focusTop + 26
@@ -269,7 +269,7 @@
 
       table.insert(graphics, {
         Type = "GroupBox", Text = "Presets", FontSize = fs1, HTextAlign = "Left",
-        Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+        StrokeColor = Palette.Black, StrokeWidth = 1,
         CornerRadius = 8, Position = {presetGX, presetTop}, Size = {presetGW, presetGH}
       })
       table.insert(graphics, {Type = "Text", Text = "tap = recall   hold = save", FontSize = fs1, HTextAlign = "Center", Color = Palette.Gray, Position = {presetGX + 80, presetTop + 2}, Size = {presetGW - 240, h1}})
@@ -386,7 +386,7 @@
         local gh = 26 + g.rows * rowStep + 8
         table.insert(graphics, {
           Type = "GroupBox", Text = g.name, FontSize = fs1, HTextAlign = "Left",
-          Fill = Palette.White, StrokeColor = Palette.cti_navy, StrokeWidth = 1,
+          StrokeColor = Palette.Black, StrokeWidth = 1,
           CornerRadius = 8, Position = {0, y}, Size = {PLUGIN_W, gh}
         })
         -- Column headings above a paired table.
