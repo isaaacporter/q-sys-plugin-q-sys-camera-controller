@@ -177,8 +177,8 @@
 
     -- Coordinates readout (current ptz.preset position), on its own row above
     -- the toggle rows.
-    table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {lblX, coordsY}, Size = {lblW, 16}})
-    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {ctlX, coordsY}, Size = {102, 16}}
+    table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {lblX, coordsY}, Size = {64, 16}})
+    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
 
     -- Two columns of proxied setup rows: toggles on the left, speeds on the
     -- right. Rendered here rather than from CamGroups because this group's
@@ -204,28 +204,38 @@
         Position = {x, y}, Size = {16, 16}}
     end
 
-    local lc, rc = lblX, 145       -- left / right label columns
-    local lcW, rcW = lblW, 115
-    local lcX, rcX = ctlX, 265     -- where each column's control starts
-    local spdW = 166               -- speed meters
+    -- Left column of toggles, and a separate right column of speed meters that
+    -- starts two rows higher -- the speeds run alongside the pad, so they do not
+    -- share a row grid with the toggles.
+    local spdLblX, spdLblW = 179, 83
+    local spdX, spdW       = 265, 166
+    local spdRow0          = 106
 
     local r = ptzRow0
-    PtzLabel(lc, r, lcW, "Speed By Zoom");  PtzBool("setup.speed.by.zoom", "Pan-Tilt-Zoom~Speed By Zoom", r, lcX)
-    PtzLabel(rc, r, rcW, "Pan Speed");      PtzMeter("setup.pan.speed", "Pan-Tilt-Zoom~Pan Speed", r, rcX, spdW)
+    PtzLabel(lblX, r, lblW, "Speed By Zoom");  PtzBool("setup.speed.by.zoom", "Pan-Tilt-Zoom~Speed By Zoom", r, ctlX)
     r = r + ptzRowH
-    PtzLabel(lc, r, lcW, "Recalibrate PTZ")
+    PtzLabel(lblX, r, lblW, "Recalibrate PTZ")
     layout["ptz.recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
       Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-      Margin = 2, Position = {lcX, r}, Size = {32, 16}}
-    PtzLabel(rc, r, rcW, "Tilt Speed");     PtzMeter("setup.tilt.speed", "Pan-Tilt-Zoom~Tilt Speed", r, rcX, spdW)
+      Margin = 2, Position = {ctlX, r}, Size = {32, 16}}
     r = r + ptzRowH
-    PtzLabel(lc, r, lcW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, lcX)
-    PtzLabel(rc, r, rcW, "Zoom Speed");     PtzMeter("setup.zoom.speed", "Pan-Tilt-Zoom~Zoom Speed", r, rcX, spdW)
+    PtzLabel(lblX, r, lblW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, ctlX)
     r = r + ptzRowH
-    PtzLabel(lc, r, lcW, "Is Moving");      PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, lcX)
-    PtzLabel(rc, r, rcW, "Recall Speed");   PtzMeter("aaaa.setup.snapshot.speed", "Pan-Tilt-Zoom~Recall Speed", r, rcX, spdW)
+    PtzLabel(lblX, r, lblW, "Is Moving");      PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, ctlX)
     r = r + ptzRowH
-    PtzLabel(lc, r, lcW, "Move Completed"); PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, lcX)
+    PtzLabel(lblX, r, lblW, "Move Completed"); PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, ctlX)
+
+    local SPEEDS = {
+      {"setup.pan.speed",            "Pan-Tilt-Zoom~Pan Speed",    "Pan Speed"},
+      {"setup.tilt.speed",           "Pan-Tilt-Zoom~Tilt Speed",   "Tilt Speed"},
+      {"setup.zoom.speed",           "Pan-Tilt-Zoom~Zoom Speed",   "Zoom Speed"},
+      {"aaaa.setup.snapshot.speed",  "Pan-Tilt-Zoom~Recall Speed", "Recall Speed"}
+    }
+    for i, s in ipairs(SPEEDS) do
+      local sy = spdRow0 + (i - 1) * ptzRowH
+      PtzLabel(spdLblX, sy, spdLblW, s[3])
+      PtzMeter(s[1], s[2], sy, spdX, spdW)
+    end
 
     -- Focus group -------------------------------------------------------------
     local focusTop = ptzGY + ptzGH + 4     -- 262 (reports as 266)
