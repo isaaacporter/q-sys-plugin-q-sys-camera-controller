@@ -186,7 +186,7 @@
     end
     local function PtzMeter(name, pretty, y, x, w)
       layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fs1,
-        HTextAlign = "Center", Color = Palette.speed_on, OffColor = Palette.meter_off,
+        HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
         UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
         Position = {x, y}, Size = {w, 16}}
     end
@@ -319,7 +319,7 @@
       if d.kind == "int" or d.kind == "float" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
           HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
-          UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+          UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "enum" then
         layout[d.name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fs1,

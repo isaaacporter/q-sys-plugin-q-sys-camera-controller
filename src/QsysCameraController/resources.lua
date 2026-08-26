@@ -13,8 +13,7 @@ Palette = {
   green_off = {0, 75, 22},      -- #004B16
   gray_off  = {137, 137, 137},  -- #898989
   text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
-  speed_on  = {124, 155, 207},  -- #ff7c9bcf  filled portion of a speed meter
-  meter_on  = {31, 78, 140},    -- #1F4E8C  filled portion of a value meter
+  meter_on  = {124, 155, 207},  -- #ff7c9bcf  filled portion of every value meter
   meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }
 
