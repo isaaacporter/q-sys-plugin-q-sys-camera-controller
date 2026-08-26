@@ -17,4 +17,5 @@ Palette = {
 }
 
 -- Pages shown by the plugin
-PageNames = { "Setup", "Pan / Tilt / Zoom", "Imaging", "Auto Framing", "IP Streams", "Status" }
+-- Setup is ours; the rest match the native camera block's tabs and order.
+PageNames = { "Setup", "Control", "Imaging", "Mediacast Streams", "Status", "Auto Framing" }

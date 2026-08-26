@@ -22,17 +22,18 @@
   local camGH = (footerY + 26) - camGY + 8
 
   -- Pan / Tilt / Zoom group geometry (styled like the native QSC camera block)
-  local ptzGX, ptzGY = 0, 44
+  local ptzGX, ptzGY = 0, 8
   local ptzGW  = PLUGIN_W
   local padX, padY = ptzGX + 100, ptzGY + 30
   local zoomX  = padX + 3 * hB + 10
-  local focusX = zoomX + hB + 8
-  local hpX    = focusX + hB + 4
-  local hpLblW, hpIcon, hpSaveW = 46, 28, 46
+  -- Focus In / Out / AF live in the Focus group, as on the native block, so the
+  -- Home / Privacy column follows straight after the zoom column.
+  local hpX    = zoomX + hB + 20
+  local hpLblW, hpIcon, hpSaveW = 46, 32, 32
   -- Pad rows, then Coordinates, then two columns of setup rows and speeds.
-  local ptzRow0 = 202          -- first row of the two-column block
+  local ptzRow0 = 168          -- first row of the two-column block
   local ptzRowH = 24
-  local ptzGH   = (ptzRow0 + 4 * ptzRowH + 8) - ptzGY
+  local ptzGH   = (ptzRow0 + 5 * ptzRowH + 8) - ptzGY
 
   if CurrentPage == "Setup" then
 
@@ -104,20 +105,9 @@
     table.insert(graphics, {Type = "Text", Text = "Source", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {132, tY2 + 3}, Size = {50, h1}})
     layout["tracked_source"] = {PrettyName = "Router~Source", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {186, tY2}, Size = {PLUGIN_W - 186 - 12, 24}}
 
-  elseif CurrentPage == "Pan / Tilt / Zoom" then
+  elseif CurrentPage == "Control" then
 
-    -- Title / build info -----------------------------------------------------
-    table.insert(graphics, {
-      Type = "Text", Text = "Q-SYS Camera Controller", FontSize = 16,
-      FontStyle = "Bold", HTextAlign = "Left", Color = Palette.cti_navy,
-      Position = {0, 4}, Size = {360, 24}
-    })
-    table.insert(graphics, {
-      Type = "Text", Text = "v" .. PluginInfo.BuildVersion, FontSize = fs1,
-      HTextAlign = "Right", Color = Palette.Gray,
-      Position = {rightEdge - 120, 8}, Size = {120, h1}
-    })
-
+    -- No page title: the native block starts straight into the first group.
     -- Pan / Tilt / Zoom group ------------------------------------------------
     table.insert(graphics, {
       Type = "GroupBox", Text = "Pan / Tilt / Zoom", FontSize = fs1,
@@ -161,16 +151,9 @@
       }
     end
 
-    -- Zoom (magnifier icons)
-    table.insert(graphics, {Type = "Text", Text = "Zoom", FontSize = fs1, HTextAlign = "Center", Position = {zoomX - 6, padY - 18}, Size = {hB + 12, h1}})
-    layout["ptz_zoom_in"]  = {PrettyName = "Pan-Tilt-Zoom~Zoom In",  Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {zoomX, padY},      Size = {hB, hB}}
-    layout["ptz_zoom_out"] = {PrettyName = "Pan-Tilt-Zoom~Zoom Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {zoomX, padY + hB}, Size = {hB, hB}}
-
-    -- Focus (In / Out / AF)
-    table.insert(graphics, {Type = "Text", Text = "Focus", FontSize = fs1, HTextAlign = "Center", Position = {focusX - 8, padY - 18}, Size = {hB + 16, h1}})
-    layout["ptz_focus_in"]  = {PrettyName = "Focus~In",  Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {focusX, padY},          Size = {hB, hB}}
-    layout["ptz_focus_out"] = {PrettyName = "Focus~Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {focusX, padY + hB},     Size = {hB, hB}}
-    layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 3, Position = {focusX, padY + 2 * hB}, Size = {hB, hB}}
+    -- Zoom (magnifier icons) -- no column heading, as on the native block
+    layout["ptz_zoom_in"]  = {PrettyName = "Pan-Tilt-Zoom~Zoom In",  Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padY},      Size = {hB, hB}}
+    layout["ptz_zoom_out"] = {PrettyName = "Pan-Tilt-Zoom~Zoom Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padY + hB}, Size = {hB, hB}}
 
     -- Home / Privacy (icon + red save, as on the native camera)
     local homeY = padY + 6
@@ -178,10 +161,10 @@
     table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.cti_navy, Position = {hpX, homeY + 4}, Size = {hpLblW, h1}})
     table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.cti_navy, Position = {hpX, privY + 4}, Size = {hpLblW, h1}})
 
-    layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 3, Position = {hpX + 52,        homeY}, Size = {hpIcon, 28}}
-    layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 10, Style = "Button", Color = Palette.Red, Margin = 3, Position = {hpX + 52 + hpIcon + 6, homeY}, Size = {hpSaveW, 28}}
-    layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 3, Position = {hpX + 52,        privY}, Size = {hpIcon, 28}}
-    layout["privacy_save"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 10, Style = "Button", Color = Palette.Red, Margin = 3, Position = {hpX + 52 + hpIcon + 6, privY}, Size = {hpSaveW, 28}}
+    layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpX + 52,        homeY}, Size = {hpIcon, 32}}
+    layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpX + 52 + hpIcon + 4, homeY}, Size = {hpSaveW, 32}}
+    layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpX + 52,        privY}, Size = {hpIcon, 32}}
+    layout["privacy_save"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpX + 52 + hpIcon + 4, privY}, Size = {hpSaveW, 32}}
 
     -- Coordinates readout (current ptz.preset position)
     local coordsY = padY + 3 * hB + 8
@@ -229,31 +212,45 @@
     PtzLabel(lc, r, lcW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, lcX)
     PtzLabel(rc, r, rcW, "Zoom Speed");     PtzMeter("setup.zoom.speed", "Pan-Tilt-Zoom~Zoom Speed", r, rcX, 117)
     r = r + ptzRowH
-    PtzLabel(lc, r, 64, "Is Moving");       PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, 76)
-    PtzLabel(98, r, 96, "Move Completed");  PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, 198)
-    PtzLabel(rc + 26, r, 80, "Recall Speed"); PtzMeter("aaaa.setup.snapshot.speed", "Pan-Tilt-Zoom~Recall Speed", r, rcX, 117)
+    PtzLabel(lc, r, lcW, "Is Moving");      PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, lcX)
+    PtzLabel(rc, r, rcW, "Recall Speed");   PtzMeter("aaaa.setup.snapshot.speed", "Pan-Tilt-Zoom~Recall Speed", r, rcX, 117)
+    r = r + ptzRowH
+    PtzLabel(lc, r, lcW, "Move Completed"); PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, lcX)
 
     -- Focus group -------------------------------------------------------------
     local focusTop = ptzGY + ptzGH + 12
-    local focusGH  = 26 + 3 * ptzRowH + 8
+    local focusGH  = 26 + 16 + hB + 18 + 8
     table.insert(graphics, {
       Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
       StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {0, focusTop}, Size = {PLUGIN_W, focusGH}
     })
+    -- Mode cluster: AF under "Auto", In/Out under "Manual", as on the native
+    -- block. These buttons used to sit beside Zoom in the PTZ group.
+    local fBtnY = focusTop + 26 + 16
+    local afX, inX, outX = 104, 104 + hB + 6, 104 + 2 * (hB + 6)
+    PtzLabel(8, fBtnY, 90, "Mode")
+    table.insert(graphics, {Type = "Text", Text = "In",  FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {inX,  fBtnY - 18}, Size = {hB, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Out", FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {outX, fBtnY - 18}, Size = {hB, h1}})
+    layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {afX,  fBtnY}, Size = {hB, hB}}
+    layout["ptz_focus_in"]  = {PrettyName = "Focus~In",  Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {inX,  fBtnY}, Size = {hB, hB}}
+    layout["ptz_focus_out"] = {PrettyName = "Focus~Out", Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {outX, fBtnY}, Size = {hB, hB}}
+    table.insert(graphics, {Type = "Text", Text = "Auto",   FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {afX, fBtnY + hB + 2}, Size = {hB, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Manual", FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {inX, fBtnY + hB + 2}, Size = {2 * hB + 6, h1}})
+
     local fy = focusTop + 26
-    PtzLabel(8, fy, 140, "Manual Speed")
-    PtzMeter("setup.focus.speed", "Focus~Manual Speed", fy, 152, 271)
+    PtzLabel(196, fy, 106, "Manual Speed")
+    PtzMeter("setup.focus.speed", "Focus~Manual Speed", fy, 306, 117)
     fy = fy + ptzRowH
-    PtzLabel(8, fy, 140, "AF Sensitivity")
+    PtzLabel(196, fy, 106, "AF Sensitivity")
     layout["setup.focus.sensitivity"] = {PrettyName = "Focus~AF Sensitivity", Style = "ComboBox",
       FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
-      StrokeWidth = 1, Position = {152, fy}, Size = {271, 22}}
+      StrokeWidth = 1, Position = {306, fy}, Size = {117, 22}}
     fy = fy + ptzRowH
-    PtzLabel(8, fy, 140, "AF Zone")
+    PtzLabel(196, fy, 106, "AF Zone")
     layout["setup.focus.zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
       FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
-      StrokeWidth = 1, Position = {152, fy}, Size = {271, 22}}
+      StrokeWidth = 1, Position = {306, fy}, Size = {117, 22}}
 
     -- Presets group (right column, under the PTZ block; single row of presets)
     if NumPresets > 0 then
@@ -358,14 +355,8 @@
       FontStyle = "Bold", HTextAlign = "Left", Color = Palette.cti_navy,
       Position = {0, 4}, Size = {360, 24}
     })
-    table.insert(graphics, {
-      Type = "Text", Text = "v" .. PluginInfo.BuildVersion, FontSize = fs1,
-      HTextAlign = "Right", Color = Palette.Gray,
-      Position = {PLUGIN_W - 120, 8}, Size = {120, h1}
-    })
-
     -- Page-level trigger sits above the first group, as on the native block.
-    local y = 30
+    local y = 8
     for _, t in ipairs(CamPageTriggers) do
       if t.page == CurrentPage then
         PlaceLabel(8, y, PLUGIN_W - 8 - 48 - 12, t.label)
