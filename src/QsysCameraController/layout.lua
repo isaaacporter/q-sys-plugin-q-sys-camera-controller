@@ -178,7 +178,7 @@
     -- Coordinates readout (current ptz.preset position), on its own row above
     -- the toggle rows.
     table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {lblX, coordsY}, Size = {64, 16}})
-    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
+    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Right", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
 
     -- Two columns of proxied setup rows: toggles on the left, speeds on the
     -- right. Rendered here rather than from CamGroups because this group's
