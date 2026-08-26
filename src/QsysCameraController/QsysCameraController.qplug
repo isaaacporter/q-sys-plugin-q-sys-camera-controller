@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.4.12.0",
-  BuildVersion = "1.4.12.0",
+  Version = "1.4.13.0",
+  BuildVersion = "1.4.13.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -684,7 +684,7 @@ function GetControlLayout(props)
         Position = {ptzGX, ptzGY}, Size = {ptzGW, ptzGH}
       })
       table.insert(graphics, {
-        Type = "Text", Text = "Pan, Tilt, and\nZoom Controls", FontSize = fs1,
+        Type = "Text", Text = "Pan, Tilt,\nand Zoom\nControls", FontSize = fs1,
         HTextAlign = "Right", Color = Palette.text,
         Position = {4, padY}, Size = {65, 102}
       })

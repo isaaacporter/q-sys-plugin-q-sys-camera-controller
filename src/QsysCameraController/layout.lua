@@ -123,7 +123,7 @@
       Position = {ptzGX, ptzGY}, Size = {ptzGW, ptzGH}
     })
     table.insert(graphics, {
-      Type = "Text", Text = "Pan, Tilt, and\nZoom Controls", FontSize = fs1,
+      Type = "Text", Text = "Pan, Tilt,\nand Zoom\nControls", FontSize = fs1,
       HTextAlign = "Right", Color = Palette.text,
       Position = {4, padY}, Size = {65, 102}
     })
