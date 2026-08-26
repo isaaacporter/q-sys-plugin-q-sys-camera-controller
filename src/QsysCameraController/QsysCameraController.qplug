@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.4.1.0",
-  BuildVersion = "1.4.1.0",
+  Version = "1.4.2.0",
+  BuildVersion = "1.4.2.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -593,7 +593,7 @@ function GetControlLayout(props)
     local hpLblW, hpIcon, hpSaveW = 46, 32, 32
     -- Pad rows, then Coordinates, then two columns of setup rows and speeds.
     local ptzRow0 = 168          -- first row of the two-column block
-    local ptzRowH = 24
+    local ptzRowH = 20
     local ptzGH   = (ptzRow0 + 5 * ptzRowH + 8) - ptzGY
   
     if CurrentPage == "Setup" then
@@ -708,7 +708,7 @@ function GetControlLayout(props)
           PrettyName = ptzPretty[name],
           Legend = "", Style = "Button",
           Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true,
-          Margin = 3, Position = {pos[1], pos[2]}, Size = {hB, hB}
+          Margin = 2, Position = {pos[1], pos[2]}, Size = {hB, hB}
         }
       end
   
@@ -729,52 +729,54 @@ function GetControlLayout(props)
   
       -- Coordinates readout (current ptz.preset position)
       local coordsY = padY + 3 * hB + 8
-      table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Left", Color = Palette.text, Position = {ptzGX + 12, coordsY + 2}, Size = {90, h1}})
-      layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {padX, coordsY}, Size = {200, 22}}
+      table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {4, coordsY - 2}, Size = {100, h1}})
+      layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {108, coordsY}, Size = {102, 16}}
   
       -- Two columns of proxied setup rows: toggles on the left, speeds on the
       -- right. Rendered here rather than from CamGroups because this group's
       -- geometry is bespoke (the 3x3 pad sits above it).
+      -- A 20pt label box centred on a 16pt control sits 2px higher.
       local function PtzLabel(x, y, w, text)
         table.insert(graphics, {Type = "Text", Text = text, FontSize = fs1,
-          HTextAlign = "Right", Color = Palette.text, Position = {x, y + 2}, Size = {w, h1}})
+          HTextAlign = "Right", Color = Palette.text, Position = {x, y - 2}, Size = {w, h1}})
       end
       local function PtzBool(name, pretty, y, x)
         layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
           Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
-          Margin = 3, Position = {x, y}, Size = {44, 22}}
+          Margin = 2, Position = {x, y}, Size = {32, 16}}
       end
       local function PtzMeter(name, pretty, y, x, w)
         layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fs1,
           HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
           UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
-          Position = {x, y}, Size = {w, 22}}
+          Position = {x, y}, Size = {w, 16}}
       end
       local function PtzLed(name, pretty, y, x)
-        layout[name] = {PrettyName = pretty, Style = "Indicator", Color = Palette.Green,
-          OffColor = {16, 40, 24}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2,
-          Position = {x, y + 2}, Size = {18, 18}}
+        layout[name] = {PrettyName = pretty, Style = "Indicator", Color = Palette.green_on,
+          OffColor = Palette.green_off, UnlinkOffColor = true, StrokeWidth = 1, Margin = 3,
+          Position = {x, y}, Size = {16, 16}}
       end
   
-      local lc, rc = 8, 196          -- left / right label columns
-      local lcW, rcW = 104, 106
-      local lcX, rcX = 116, 306      -- where each column's control starts
+      local lc, rc = 4, 145          -- left / right label columns
+      local lcW, rcW = 100, 115
+      local lcX, rcX = 108, 265      -- where each column's control starts
+      local spdW = 166               -- speed meters
   
       local r = ptzRow0
       PtzLabel(lc, r, lcW, "Speed By Zoom");  PtzBool("setup.speed.by.zoom", "Pan-Tilt-Zoom~Speed By Zoom", r, lcX)
-      PtzLabel(rc, r, rcW, "Pan Speed");      PtzMeter("setup.pan.speed", "Pan-Tilt-Zoom~Pan Speed", r, rcX, 117)
+      PtzLabel(rc, r, rcW, "Pan Speed");      PtzMeter("setup.pan.speed", "Pan-Tilt-Zoom~Pan Speed", r, rcX, spdW)
       r = r + ptzRowH
       PtzLabel(lc, r, lcW, "Recalibrate PTZ")
       layout["ptz.recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
         Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-        Margin = 3, Position = {lcX, r}, Size = {44, 22}}
-      PtzLabel(rc, r, rcW, "Tilt Speed");     PtzMeter("setup.tilt.speed", "Pan-Tilt-Zoom~Tilt Speed", r, rcX, 117)
+        Margin = 2, Position = {lcX, r}, Size = {32, 16}}
+      PtzLabel(rc, r, rcW, "Tilt Speed");     PtzMeter("setup.tilt.speed", "Pan-Tilt-Zoom~Tilt Speed", r, rcX, spdW)
       r = r + ptzRowH
       PtzLabel(lc, r, lcW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, lcX)
-      PtzLabel(rc, r, rcW, "Zoom Speed");     PtzMeter("setup.zoom.speed", "Pan-Tilt-Zoom~Zoom Speed", r, rcX, 117)
+      PtzLabel(rc, r, rcW, "Zoom Speed");     PtzMeter("setup.zoom.speed", "Pan-Tilt-Zoom~Zoom Speed", r, rcX, spdW)
       r = r + ptzRowH
       PtzLabel(lc, r, lcW, "Is Moving");      PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, lcX)
-      PtzLabel(rc, r, rcW, "Recall Speed");   PtzMeter("aaaa.setup.snapshot.speed", "Pan-Tilt-Zoom~Recall Speed", r, rcX, 117)
+      PtzLabel(rc, r, rcW, "Recall Speed");   PtzMeter("aaaa.setup.snapshot.speed", "Pan-Tilt-Zoom~Recall Speed", r, rcX, spdW)
       r = r + ptzRowH
       PtzLabel(lc, r, lcW, "Move Completed"); PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, lcX)
   
