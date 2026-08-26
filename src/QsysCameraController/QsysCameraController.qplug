@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.4.6.0",
-  BuildVersion = "1.4.6.0",
+  Version = "1.4.7.0",
+  BuildVersion = "1.4.7.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -583,7 +583,9 @@ function GetControlLayout(props)
     local camGH = (footerY + 26) - camGY + 8
   
     -- Pan / Tilt / Zoom group geometry (styled like the native QSC camera block)
-    local ptzGX, ptzGY = 4, 4
+    -- Designer insets the whole plugin by 4px on the top and sides, so every
+    -- position here is 4 less than what its properties panel reports.
+    local ptzGX, ptzGY = 0, 0
     local ptzGW  = PLUGIN_W
     local padX, padY = ptzGX + 100, ptzGY + 30
     local zoomX  = padX + 3 * hB + 10
@@ -592,9 +594,9 @@ function GetControlLayout(props)
     local hpX    = zoomX + hB + 20
     local hpLblW, hpIcon, hpSaveW = 46, 32, 32
     -- Pad rows, then Coordinates, then two columns of setup rows and speeds.
-    -- Sized so the group closes at y=262, leaving Focus to open at 266 with its
-    -- first row on the specified y=280.
-    local ptzRow0 = 158          -- first row of the two-column block
+    -- Sized so the group closes at 258, leaving Focus to open at 262 with its
+    -- first row on the specified y=280 (276 here).
+    local ptzRow0 = 154          -- first row of the two-column block
     local ptzRowH = 20
     local ptzGH   = (ptzRow0 + 4 * ptzRowH + 16 + 8) - ptzGY
   
@@ -783,7 +785,7 @@ function GetControlLayout(props)
       PtzLabel(lc, r, lcW, "Move Completed"); PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, lcX)
   
       -- Focus group -------------------------------------------------------------
-      local focusTop = ptzGY + ptzGH + 4     -- 266
+      local focusTop = ptzGY + ptzGH + 4     -- 262 (reports as 266)
       local focusGH  = 92                    -- closes at 358, below the captions
       table.insert(graphics, {
         Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
@@ -793,9 +795,9 @@ function GetControlLayout(props)
       -- Mode cluster: AF under "Auto", In/Out under "Manual", as on the native
       -- block. These buttons used to sit beside Zoom in the PTZ group.
       -- Mode / In / Out head their buttons; Auto / Manual caption them.
-      local afX, inX, outX = 78, 113, 148
-      local fHeadY, fBtnY, fCapY = 280, 299, 334
-      table.insert(graphics, {Type = "Text", Text = "Mode", FontSize = fs1, HTextAlign = "Right",  Color = Palette.text, Position = {75,   fHeadY}, Size = {35, 16}})
+      local afX, inX, outX = 74, 109, 144
+      local fHeadY, fBtnY, fCapY = 276, 295, 330
+      table.insert(graphics, {Type = "Text", Text = "Mode", FontSize = fs1, HTextAlign = "Right",  Color = Palette.text, Position = {71,   fHeadY}, Size = {35, 16}})
       table.insert(graphics, {Type = "Text", Text = "In",   FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX,  fHeadY}, Size = {hB, 16}})
       table.insert(graphics, {Type = "Text", Text = "Out",  FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {outX, fHeadY}, Size = {hB, 16}})
       layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {afX,  fBtnY}, Size = {hB, hB}}
@@ -804,22 +806,22 @@ function GetControlLayout(props)
       table.insert(graphics, {Type = "Text", Text = "Auto",   FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {afX, fCapY}, Size = {32, 16}})
       table.insert(graphics, {Type = "Text", Text = "Manual", FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX, fCapY}, Size = {67, 16}})
   
-      -- Focus option boxes are 160x16 at x=266, labels 80 wide at x=183.
-      local foX, foW = 266, 160
+      -- Focus option boxes are 160x16 at x=262, labels 80 wide at x=179.
+      local foX, foW = 262, 160
       local function FocusLabel(y, text)
         table.insert(graphics, {Type = "Text", Text = text, FontSize = fs1,
-          HTextAlign = "Right", Color = Palette.text, Position = {183, y}, Size = {80, 16}})
+          HTextAlign = "Right", Color = Palette.text, Position = {179, y}, Size = {80, 16}})
       end
-      FocusLabel(280, "Manual Speed")
-      PtzMeter("setup.focus.speed", "Focus~Manual Speed", 280, foX, foW)
-      FocusLabel(299, "AF Sensitivity")
+      FocusLabel(276, "Manual Speed")
+      PtzMeter("setup.focus.speed", "Focus~Manual Speed", 276, foX, foW)
+      FocusLabel(295, "AF Sensitivity")
       layout["setup.focus.sensitivity"] = {PrettyName = "Focus~AF Sensitivity", Style = "ComboBox",
         FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
-        StrokeWidth = 1, Position = {foX, 299}, Size = {foW, 16}}
-      FocusLabel(318, "AF Zone")
+        StrokeWidth = 1, Position = {foX, 295}, Size = {foW, 16}}
+      FocusLabel(314, "AF Zone")
       layout["setup.focus.zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
         FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
-        StrokeWidth = 1, Position = {foX, 318}, Size = {foW, 16}}
+        StrokeWidth = 1, Position = {foX, 314}, Size = {foW, 16}}
   
       -- Presets group (right column, under the PTZ block; single row of presets)
       if NumPresets > 0 then
