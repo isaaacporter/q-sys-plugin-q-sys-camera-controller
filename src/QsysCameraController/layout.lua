@@ -26,18 +26,21 @@
   -- position here is 4 less than what its properties panel reports.
   local ptzGX, ptzGY = 0, 0
   local ptzGW  = PLUGIN_W
-  local padX, padY = ptzGX + 100, ptzGY + 30
-  local zoomX  = padX + 3 * hB + 10
-  -- Focus In / Out / AF live in the Focus group, as on the native block, so the
-  -- Home / Privacy column follows straight after the zoom column.
-  local hpX    = zoomX + hB + 20
-  local hpLblW, hpIcon, hpSaveW = 46, 32, 32
-  -- Pad rows, then Coordinates, then two columns of setup rows and speeds.
-  -- Sized so the group closes at 258, leaving Focus to open at 262 with its
-  -- first row on the specified y=280 (276 here).
-  local ptzRow0 = 154          -- first row of the two-column block
-  local ptzRowH = 20
-  local ptzGH   = (ptzRow0 + 4 * ptzRowH + 16 + 8) - ptzGY
+  -- 4-column x 3-row button grid: three pad columns then a zoom column.
+  local padX, padY = 74, 20
+  local padPitch   = 35
+  local zoomX      = padX + 3 * padPitch          -- 179
+  -- Home / Privacy: label, icon, then the red save button.
+  local hpLblX, hpIconX, hpSaveX = 214, 265, 300
+  local hpLblW, hpIcon, hpSaveW  = 48, 32, 32
+  -- Left column: 102-wide labels at x=4 with controls at x=109. Coordinates
+  -- sits on its own row above the toggles.
+  local lblX, lblW = 4, 102
+  local ctlX       = 109
+  local coordsY    = 125
+  local ptzRow0    = 144       -- first toggle row
+  local ptzRowH    = 19
+  local ptzGH      = (ptzRow0 + 4 * ptzRowH + 16 + 16) - ptzGY   -- closes at 252
 
   if CurrentPage == "Setup" then
 
@@ -122,19 +125,20 @@
     table.insert(graphics, {
       Type = "Text", Text = "Pan, Tilt, and\nZoom Controls", FontSize = fs1,
       HTextAlign = "Center", Color = Palette.text,
-      Position = {ptzGX + 8, padY + 16}, Size = {90, 48}
+      Position = {4, padY}, Size = {65, 102}
     })
 
     -- 3x3 directional pad with an empty centre (matches the QSC layout)
+    local padR2, padR3 = padY + padPitch, padY + 2 * padPitch
     local pad = {
-      ptz_up_left    = {padX,          padY},
-      ptz_tilt_up    = {padX + hB,     padY},
-      ptz_up_right   = {padX + 2 * hB, padY},
-      ptz_pan_left   = {padX,          padY + hB},
-      ptz_pan_right  = {padX + 2 * hB, padY + hB},
-      ptz_down_left  = {padX,          padY + 2 * hB},
-      ptz_tilt_down  = {padX + hB,     padY + 2 * hB},
-      ptz_down_right = {padX + 2 * hB, padY + 2 * hB}
+      ptz_up_left    = {padX,                  padY},
+      ptz_tilt_up    = {padX + padPitch,       padY},
+      ptz_up_right   = {padX + 2 * padPitch,   padY},
+      ptz_pan_left   = {padX,                  padR2},
+      ptz_pan_right  = {padX + 2 * padPitch,   padR2},
+      ptz_down_left  = {padX,                  padR3},
+      ptz_tilt_down  = {padX + padPitch,       padR3},
+      ptz_down_right = {padX + 2 * padPitch,   padR3}
     }
     local ptzPretty = {
       ptz_up_left    = "Pan-Tilt-Zoom~Pan Left / Tilt Up",
@@ -156,32 +160,32 @@
     end
 
     -- Zoom (magnifier icons) -- no column heading, as on the native block
-    layout["ptz_zoom_in"]  = {PrettyName = "Pan-Tilt-Zoom~Zoom In",  Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padY},      Size = {hB, hB}}
-    layout["ptz_zoom_out"] = {PrettyName = "Pan-Tilt-Zoom~Zoom Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padY + hB}, Size = {hB, hB}}
+    layout["ptz_zoom_in"]  = {PrettyName = "Pan-Tilt-Zoom~Zoom In",  Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padY},  Size = {hB, hB}}
+    layout["ptz_zoom_out"] = {PrettyName = "Pan-Tilt-Zoom~Zoom Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padR2}, Size = {hB, hB}}
 
     -- Home / Privacy (icon + red save, as on the native camera)
-    local homeY = padY + 6
-    local privY = padY + hB + 14
-    table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpX, homeY + 4}, Size = {hpLblW, h1}})
-    table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpX, privY + 4}, Size = {hpLblW, h1}})
+    -- Home on the pad's first row, Privacy on its second; labels centred on the
+    -- 32pt buttons, so 8px lower.
+    local homeY, privY = padY, padR2
+    table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, homeY + 8}, Size = {hpLblW, 16}})
+    table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, privY + 8}, Size = {hpLblW, 16}})
 
-    layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpX + 52,        homeY}, Size = {hpIcon, 32}}
-    layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpX + 52 + hpIcon + 4, homeY}, Size = {hpSaveW, 32}}
-    layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpX + 52,        privY}, Size = {hpIcon, 32}}
-    layout["privacy_save"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpX + 52 + hpIcon + 4, privY}, Size = {hpSaveW, 32}}
+    layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, homeY}, Size = {hpIcon, 32}}
+    layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, homeY}, Size = {hpSaveW, 32}}
+    layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, privY}, Size = {hpIcon, 32}}
+    layout["privacy_save"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, privY}, Size = {hpSaveW, 32}}
 
-    -- Coordinates readout (current ptz.preset position)
-    local coordsY = padY + 3 * hB + 8
-    table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {4, coordsY - 2}, Size = {100, h1}})
-    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {108, coordsY}, Size = {102, 16}}
+    -- Coordinates readout (current ptz.preset position), on its own row above
+    -- the toggle rows.
+    table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {lblX, coordsY}, Size = {lblW, 16}})
+    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {ctlX, coordsY}, Size = {102, 16}}
 
     -- Two columns of proxied setup rows: toggles on the left, speeds on the
     -- right. Rendered here rather than from CamGroups because this group's
     -- geometry is bespoke (the 3x3 pad sits above it).
-    -- A 20pt label box centred on a 16pt control sits 2px higher.
     local function PtzLabel(x, y, w, text)
       table.insert(graphics, {Type = "Text", Text = text, FontSize = fs1,
-        HTextAlign = "Right", Color = Palette.text, Position = {x, y - 2}, Size = {w, h1}})
+        HTextAlign = "Right", Color = Palette.text, Position = {x, y}, Size = {w, 16}})
     end
     local function PtzBool(name, pretty, y, x)
       layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
@@ -200,9 +204,9 @@
         Position = {x, y}, Size = {16, 16}}
     end
 
-    local lc, rc = 4, 145          -- left / right label columns
-    local lcW, rcW = 100, 115
-    local lcX, rcX = 108, 265      -- where each column's control starts
+    local lc, rc = lblX, 145       -- left / right label columns
+    local lcW, rcW = lblW, 115
+    local lcX, rcX = ctlX, 265     -- where each column's control starts
     local spdW = 166               -- speed meters
 
     local r = ptzRow0
