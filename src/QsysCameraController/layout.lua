@@ -5,7 +5,7 @@
   local CameraCount = props["Camera Count"].Value
   local NumPresets  = props["Num Presets"].Value
 
-  local fs1  = 12
+  local fs1  = 11   -- all label text on the native pages is 11pt
   local h1   = 20
   local hB   = 32
   local rowH = 30
@@ -40,7 +40,7 @@
     -- Title / build info -----------------------------------------------------
     table.insert(graphics, {
       Type = "Text", Text = "Q-SYS Camera Controller", FontSize = 16,
-      FontStyle = "Bold", HTextAlign = "Left", Color = Palette.cti_navy,
+      FontStyle = "Bold", HTextAlign = "Left", Color = Palette.text,
       Position = {0, 4}, Size = {360, 24}
     })
     table.insert(graphics, {
@@ -52,7 +52,7 @@
     -- Camera selection group -------------------------------------------------
     table.insert(graphics, {
       Type = "GroupBox", Text = "Cameras", FontSize = fs1, HTextAlign = "Left",
-      StrokeColor = Palette.Black, StrokeWidth = 1,
+      Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {camGX, camGY}, Size = {camGW, camGH}
     })
 
@@ -62,7 +62,7 @@
       layout[fmt("camera_active_%03d", i)] = {
         PrettyName = fmt("Cameras~%d Select", i),
         Legend = tostring(i), Style = "Button",
-        Color = {0, 210, 70}, OffColor = Palette.cti_navy, UnlinkOffColor = true,
+        Color = {0, 210, 70}, OffColor = {13, 59, 102}, UnlinkOffColor = true,
         Margin = 3, Position = {camGX + 8, y}, Size = {26, 26}
       }
       layout[fmt("camera_select_%03d", i)] = {
@@ -79,7 +79,7 @@
       }
     end
 
-    table.insert(graphics, {Type = "Text", Text = "Active", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {camGX + 12, footerY + 3}, Size = {48, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Active", FontSize = fs1, HTextAlign = "Left", Color = Palette.text, Position = {camGX + 12, footerY + 3}, Size = {48, h1}})
     layout["active_camera_name"] = {
       PrettyName = "Cameras~Active Camera", Style = "Text", FontSize = fs1,
       HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
@@ -93,16 +93,16 @@
 
     table.insert(graphics, {
       Type = "GroupBox", Text = "Camera Router (Optional)", FontSize = fs1, HTextAlign = "Left",
-      StrokeColor = Palette.Black, StrokeWidth = 1,
+      Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {0, trackTop}, Size = {PLUGIN_W, 92}
     })
-    table.insert(graphics, {Type = "Text", Text = "Router", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {12, tY + 3}, Size = {48, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Router", FontSize = fs1, HTextAlign = "Left", Color = Palette.text, Position = {12, tY + 3}, Size = {48, h1}})
     layout["router_select"] = {PrettyName = "Router~Component", Style = "ComboBox", FontSize = fs1, Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {62, tY}, Size = {PLUGIN_W - 62 - 40, 24}}
     layout["router_found"] = {PrettyName = "Router~Found", Style = "Indicator", Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2, Position = {PLUGIN_W - 28, tY + 3}, Size = {18, 18}}
 
-    table.insert(graphics, {Type = "Text", Text = "Output", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {12, tY2 + 3}, Size = {50, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Output", FontSize = fs1, HTextAlign = "Left", Color = Palette.text, Position = {12, tY2 + 3}, Size = {50, h1}})
     layout["router_output"] = {PrettyName = "Router~Output", Style = "Text", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, FontSize = fs1, HTextAlign = "Center", Padding = 2, StrokeWidth = 1, Position = {66, tY2}, Size = {56, 24}}
-    table.insert(graphics, {Type = "Text", Text = "Source", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {132, tY2 + 3}, Size = {50, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Source", FontSize = fs1, HTextAlign = "Left", Color = Palette.text, Position = {132, tY2 + 3}, Size = {50, h1}})
     layout["tracked_source"] = {PrettyName = "Router~Source", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1, Position = {186, tY2}, Size = {PLUGIN_W - 186 - 12, 24}}
 
   elseif CurrentPage == "Control" then
@@ -111,13 +111,13 @@
     -- Pan / Tilt / Zoom group ------------------------------------------------
     table.insert(graphics, {
       Type = "GroupBox", Text = "Pan / Tilt / Zoom", FontSize = fs1,
-      HTextAlign = "Left", StrokeColor = Palette.Black,
+      HTextAlign = "Left", Color = Palette.text, StrokeColor = Palette.Black,
       StrokeWidth = 1, CornerRadius = 8,
       Position = {ptzGX, ptzGY}, Size = {ptzGW, ptzGH}
     })
     table.insert(graphics, {
       Type = "Text", Text = "Pan, Tilt, and\nZoom Controls", FontSize = fs1,
-      HTextAlign = "Center", Color = Palette.cti_navy,
+      HTextAlign = "Center", Color = Palette.text,
       Position = {ptzGX + 8, padY + 16}, Size = {90, 48}
     })
 
@@ -158,8 +158,8 @@
     -- Home / Privacy (icon + red save, as on the native camera)
     local homeY = padY + 6
     local privY = padY + hB + 14
-    table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.cti_navy, Position = {hpX, homeY + 4}, Size = {hpLblW, h1}})
-    table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.cti_navy, Position = {hpX, privY + 4}, Size = {hpLblW, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpX, homeY + 4}, Size = {hpLblW, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpX, privY + 4}, Size = {hpLblW, h1}})
 
     layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpX + 52,        homeY}, Size = {hpIcon, 32}}
     layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpX + 52 + hpIcon + 4, homeY}, Size = {hpSaveW, 32}}
@@ -168,7 +168,7 @@
 
     -- Coordinates readout (current ptz.preset position)
     local coordsY = padY + 3 * hB + 8
-    table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Left", Color = Palette.cti_navy, Position = {ptzGX + 12, coordsY + 2}, Size = {90, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Left", Color = Palette.text, Position = {ptzGX + 12, coordsY + 2}, Size = {90, h1}})
     layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {padX, coordsY}, Size = {200, 22}}
 
     -- Two columns of proxied setup rows: toggles on the left, speeds on the
@@ -176,7 +176,7 @@
     -- geometry is bespoke (the 3x3 pad sits above it).
     local function PtzLabel(x, y, w, text)
       table.insert(graphics, {Type = "Text", Text = text, FontSize = fs1,
-        HTextAlign = "Right", Color = Palette.cti_navy, Position = {x, y + 2}, Size = {w, h1}})
+        HTextAlign = "Right", Color = Palette.text, Position = {x, y + 2}, Size = {w, h1}})
     end
     local function PtzBool(name, pretty, y, x)
       layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
@@ -222,7 +222,7 @@
     local focusGH  = 26 + 16 + hB + 18 + 8
     table.insert(graphics, {
       Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
-      StrokeColor = Palette.Black, StrokeWidth = 1,
+      Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {0, focusTop}, Size = {PLUGIN_W, focusGH}
     })
     -- Mode cluster: AF under "Auto", In/Out under "Manual", as on the native
@@ -230,13 +230,13 @@
     local fBtnY = focusTop + 26 + 16
     local afX, inX, outX = 104, 104 + hB + 6, 104 + 2 * (hB + 6)
     PtzLabel(8, fBtnY, 90, "Mode")
-    table.insert(graphics, {Type = "Text", Text = "In",  FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {inX,  fBtnY - 18}, Size = {hB, h1}})
-    table.insert(graphics, {Type = "Text", Text = "Out", FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {outX, fBtnY - 18}, Size = {hB, h1}})
+    table.insert(graphics, {Type = "Text", Text = "In",  FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX,  fBtnY - 18}, Size = {hB, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Out", FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {outX, fBtnY - 18}, Size = {hB, h1}})
     layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {afX,  fBtnY}, Size = {hB, hB}}
     layout["ptz_focus_in"]  = {PrettyName = "Focus~In",  Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {inX,  fBtnY}, Size = {hB, hB}}
     layout["ptz_focus_out"] = {PrettyName = "Focus~Out", Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {outX, fBtnY}, Size = {hB, hB}}
-    table.insert(graphics, {Type = "Text", Text = "Auto",   FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {afX, fBtnY + hB + 2}, Size = {hB, h1}})
-    table.insert(graphics, {Type = "Text", Text = "Manual", FontSize = fs1, HTextAlign = "Center", Color = Palette.cti_navy, Position = {inX, fBtnY + hB + 2}, Size = {2 * hB + 6, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Auto",   FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {afX, fBtnY + hB + 2}, Size = {hB, h1}})
+    table.insert(graphics, {Type = "Text", Text = "Manual", FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX, fBtnY + hB + 2}, Size = {2 * hB + 6, h1}})
 
     local fy = focusTop + 26
     PtzLabel(196, fy, 106, "Manual Speed")
@@ -266,11 +266,11 @@
 
       table.insert(graphics, {
         Type = "GroupBox", Text = "Presets", FontSize = fs1, HTextAlign = "Left",
-        StrokeColor = Palette.Black, StrokeWidth = 1,
+        Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
         CornerRadius = 8, Position = {presetGX, presetTop}, Size = {presetGW, presetGH}
       })
       table.insert(graphics, {Type = "Text", Text = "tap = recall   hold = save", FontSize = fs1, HTextAlign = "Center", Color = Palette.Gray, Position = {presetGX + 80, presetTop + 2}, Size = {presetGW - 240, h1}})
-      table.insert(graphics, {Type = "Text", Text = "Preset Saved", FontSize = fs1, HTextAlign = "Right", Color = Palette.cti_navy, Position = {presetGX + presetGW - 150, presetTop + 2}, Size = {120, h1}})
+      table.insert(graphics, {Type = "Text", Text = "Preset Saved", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {presetGX + presetGW - 150, presetTop + 2}, Size = {120, h1}})
       layout["preset_saved"] = {PrettyName = "Presets~Saved", Style = "Indicator", Color = Palette.cti_amber, OffColor = {60, 46, 16}, UnlinkOffColor = true, StrokeWidth = 1, Margin = 2, Position = {presetGX + presetGW - 26, presetTop + 4}, Size = {18, 18}}
 
       for p = 1, NumPresets do
@@ -303,7 +303,7 @@
     local function PlaceLabel(x, y, w, text)
       table.insert(graphics, {
         Type = "Text", Text = text, FontSize = fs1, HTextAlign = "Right",
-        Color = Palette.cti_navy, Position = {x, y + 2}, Size = {w, h1}
+        Color = Palette.text, Position = {x, y + 2}, Size = {w, h1}
       })
     end
 
@@ -349,12 +349,6 @@
       end
     end
 
-    -- Title / build info -----------------------------------------------------
-    table.insert(graphics, {
-      Type = "Text", Text = "Q-SYS Camera Controller", FontSize = 16,
-      FontStyle = "Bold", HTextAlign = "Left", Color = Palette.cti_navy,
-      Position = {0, 4}, Size = {360, 24}
-    })
     -- Page-level trigger sits above the first group, as on the native block.
     local y = 8
     for _, t in ipairs(CamPageTriggers) do
@@ -377,7 +371,7 @@
         local gh = 26 + g.rows * rowStep + 8
         table.insert(graphics, {
           Type = "GroupBox", Text = g.name, FontSize = fs1, HTextAlign = "Left",
-          StrokeColor = Palette.Black, StrokeWidth = 1,
+          Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
           CornerRadius = 8, Position = {0, y}, Size = {PLUGIN_W, gh}
         })
         -- Column headings above a paired table.
@@ -385,7 +379,7 @@
           for c, text in ipairs(g.headers) do
             table.insert(graphics, {
               Type = "Text", Text = text, FontSize = fs1, FontStyle = "Bold",
-              HTextAlign = "Center", Color = Palette.cti_navy,
+              HTextAlign = "Center", Color = Palette.text,
               Position = {PairX(c), y + 26}, Size = {pColW, h1}
             })
           end

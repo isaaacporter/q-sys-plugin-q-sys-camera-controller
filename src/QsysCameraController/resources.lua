@@ -12,6 +12,7 @@ Palette = {
   green_on  = {0, 159, 60},     -- #009F3C
   green_off = {0, 75, 22},      -- #004B16
   gray_off  = {137, 137, 137},  -- #898989
+  text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
   meter_on  = {31, 78, 140},    -- #1F4E8C  filled portion of a value meter
   meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }
