@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.4.2.0",
-  BuildVersion = "1.4.2.0",
+  Version = "1.4.3.0",
+  BuildVersion = "1.4.3.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -38,6 +38,7 @@ Palette = {
   green_off = {0, 75, 22},      -- #004B16
   gray_off  = {137, 137, 137},  -- #898989
   text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
+  speed_on  = {124, 155, 207},  -- #ff7c9bcf  filled portion of a speed meter
   meter_on  = {31, 78, 140},    -- #1F4E8C  filled portion of a value meter
   meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }
@@ -747,8 +748,8 @@ function GetControlLayout(props)
       end
       local function PtzMeter(name, pretty, y, x, w)
         layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fs1,
-          HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
-          UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+          HTextAlign = "Center", Color = Palette.speed_on, OffColor = Palette.meter_off,
+          UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, 16}}
       end
       local function PtzLed(name, pretty, y, x)

@@ -186,8 +186,8 @@
     end
     local function PtzMeter(name, pretty, y, x, w)
       layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fs1,
-        HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
-        UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+        HTextAlign = "Center", Color = Palette.speed_on, OffColor = Palette.meter_off,
+        UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
         Position = {x, y}, Size = {w, 16}}
     end
     local function PtzLed(name, pretty, y, x)
