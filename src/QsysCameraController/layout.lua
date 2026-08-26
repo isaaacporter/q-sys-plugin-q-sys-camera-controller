@@ -6,6 +6,7 @@
   local NumPresets  = props["Num Presets"].Value
 
   local fs1  = 11   -- all label text on the native pages is 11pt
+  local fsM  = 9    -- value text inside a meter
   local h1   = 20
   local hB   = 32
   local rowH = 30
@@ -178,7 +179,7 @@
     -- Coordinates readout (current ptz.preset position), on its own row above
     -- the toggle rows.
     table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {lblX, coordsY}, Size = {64, 16}})
-    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
+    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 1, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
 
     -- Two columns of proxied setup rows: toggles on the left, speeds on the
     -- right. Rendered here rather than from CamGroups because this group's
@@ -193,7 +194,7 @@
         Margin = 2, Position = {x, y}, Size = {32, 16}}
     end
     local function PtzMeter(name, pretty, y, x, w)
-      layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fs1,
+      layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fsM,
         HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
         UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
         Position = {x, y}, Size = {w, 16}}
@@ -336,7 +337,7 @@
     -- value you cannot set.
     local function PlaceCtl(d, x, y, w)
       if d.kind == "int" or d.kind == "float" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
           HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
           UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
