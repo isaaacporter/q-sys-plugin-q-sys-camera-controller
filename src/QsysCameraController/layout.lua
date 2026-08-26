@@ -40,7 +40,7 @@
   local coordsY    = 125
   local ptzRow0    = 144       -- first toggle row
   local ptzRowH    = 19
-  local ptzGH      = (ptzRow0 + 4 * ptzRowH + 16 + 16) - ptzGY   -- closes at 252
+  local ptzGH      = 240
 
   if CurrentPage == "Setup" then
 
@@ -124,7 +124,7 @@
     })
     table.insert(graphics, {
       Type = "Text", Text = "Pan, Tilt, and\nZoom Controls", FontSize = fs1,
-      HTextAlign = "Center", Color = Palette.text,
+      HTextAlign = "Right", Color = Palette.text,
       Position = {4, padY}, Size = {65, 102}
     })
 
@@ -178,7 +178,7 @@
     -- Coordinates readout (current ptz.preset position), on its own row above
     -- the toggle rows.
     table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {lblX, coordsY}, Size = {64, 16}})
-    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Right", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
+    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fs1, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 2, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
 
     -- Two columns of proxied setup rows: toggles on the left, speeds on the
     -- right. Rendered here rather than from CamGroups because this group's
@@ -238,7 +238,7 @@
     end
 
     -- Focus group -------------------------------------------------------------
-    local focusTop = ptzGY + ptzGH + 4     -- 262 (reports as 266)
+    local focusTop = 256                   -- reports as 260
     local focusGH  = 94
     table.insert(graphics, {
       Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
