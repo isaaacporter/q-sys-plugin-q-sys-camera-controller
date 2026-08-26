@@ -221,7 +221,7 @@
 
     -- Focus group -------------------------------------------------------------
     local focusTop = ptzGY + ptzGH + 12
-    local focusGH  = 26 + 16 + hB + 18 + 8
+    local focusGH  = 26 + 18 + hB + 18 + 12
     table.insert(graphics, {
       Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
       Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
@@ -231,7 +231,8 @@
     -- block. These buttons used to sit beside Zoom in the PTZ group.
     local fBtnY = focusTop + 26 + 16
     local afX, inX, outX = 104, 104 + hB + 6, 104 + 2 * (hB + 6)
-    PtzLabel(8, fBtnY, 90, "Mode")
+    -- Mode / In / Out are column headings above their buttons.
+    table.insert(graphics, {Type = "Text", Text = "Mode", FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {afX,  fBtnY - 18}, Size = {hB, h1}})
     table.insert(graphics, {Type = "Text", Text = "In",  FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX,  fBtnY - 18}, Size = {hB, h1}})
     table.insert(graphics, {Type = "Text", Text = "Out", FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {outX, fBtnY - 18}, Size = {hB, h1}})
     layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {afX,  fBtnY}, Size = {hB, hB}}
@@ -240,19 +241,21 @@
     table.insert(graphics, {Type = "Text", Text = "Auto",   FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {afX, fBtnY + hB + 2}, Size = {hB, h1}})
     table.insert(graphics, {Type = "Text", Text = "Manual", FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX, fBtnY + hB + 2}, Size = {2 * hB + 6, h1}})
 
+    -- Focus options are all 106x16.
+    local foX, foW = 319, 106
     local fy = focusTop + 26
-    PtzLabel(196, fy, 106, "Manual Speed")
-    PtzMeter("setup.focus.speed", "Focus~Manual Speed", fy, 306, 117)
+    PtzLabel(200, fy, 115, "Manual Speed")
+    PtzMeter("setup.focus.speed", "Focus~Manual Speed", fy, foX, foW)
     fy = fy + ptzRowH
-    PtzLabel(196, fy, 106, "AF Sensitivity")
+    PtzLabel(200, fy, 115, "AF Sensitivity")
     layout["setup.focus.sensitivity"] = {PrettyName = "Focus~AF Sensitivity", Style = "ComboBox",
       FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
-      StrokeWidth = 1, Position = {306, fy}, Size = {117, 22}}
+      StrokeWidth = 1, Position = {foX, fy}, Size = {foW, 16}}
     fy = fy + ptzRowH
-    PtzLabel(196, fy, 106, "AF Zone")
+    PtzLabel(200, fy, 115, "AF Zone")
     layout["setup.focus.zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
       FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
-      StrokeWidth = 1, Position = {306, fy}, Size = {117, 22}}
+      StrokeWidth = 1, Position = {foX, fy}, Size = {foW, 16}}
 
     -- Presets group (right column, under the PTZ block; single row of presets)
     if NumPresets > 0 then
