@@ -239,7 +239,7 @@
 
     -- Focus group -------------------------------------------------------------
     local focusTop = ptzGY + ptzGH + 4     -- 262 (reports as 266)
-    local focusGH  = 92                    -- closes at 358, below the captions
+    local focusGH  = 94
     table.insert(graphics, {
       Type = "GroupBox", Text = "Focus", FontSize = fs1, HTextAlign = "Left",
       Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
