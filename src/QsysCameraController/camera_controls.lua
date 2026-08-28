@@ -41,6 +41,9 @@ CamCtls = {
   {page = "Control", name = "setup.focus.speed", pretty = "Focus~Manual Speed", label = "Manual Speed", kind = "float", min = 0.001, max = 1.0},
   {page = "Control", name = "setup.focus.sensitivity", pretty = "Focus~AF Sensitivity", label = "AF Sensitivity", kind = "enum"},
   {page = "Control", name = "setup.focus.zone", pretty = "Focus~AF Zone", label = "AF Zone", kind = "enum"},
+  -- The camera hands its preview stream over as a string on this control; our
+  -- text field renders it because the layout presents it as a MediaDisplay.
+  {page = "Control", name = "preview", pretty = "Preview", label = "Preview", kind = "media"},
 
   -- ===== Imaging page =====
   {page = "Imaging", group = "Imaging", col = 1, row = 1,

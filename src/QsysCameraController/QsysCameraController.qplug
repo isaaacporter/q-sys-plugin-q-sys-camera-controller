@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.15.0",
-  BuildVersion = "1.5.15.0",
+  Version = "1.6.0.0",
+  BuildVersion = "1.6.0.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -97,6 +97,9 @@ CamCtls = {
   {page = "Control", name = "setup.focus.speed", pretty = "Focus~Manual Speed", label = "Manual Speed", kind = "float", min = 0.001, max = 1.0},
   {page = "Control", name = "setup.focus.sensitivity", pretty = "Focus~AF Sensitivity", label = "AF Sensitivity", kind = "enum"},
   {page = "Control", name = "setup.focus.zone", pretty = "Focus~AF Zone", label = "AF Zone", kind = "enum"},
+  -- The camera hands its preview stream over as a string on this control; our
+  -- text field renders it because the layout presents it as a MediaDisplay.
+  {page = "Control", name = "preview", pretty = "Preview", label = "Preview", kind = "media"},
 
   -- ===== Imaging page =====
   {page = "Imaging", group = "Imaging", col = 1, row = 1,
@@ -559,6 +562,9 @@ function GetControls(props)
       bool      = function(d) return {ControlType = "Button", ButtonType = "Toggle", PinStyle = "Both"} end,
       enum      = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
       ro        = function(d) return {ControlType = "Indicator", IndicatorType = "Text", PinStyle = "Output"} end,
+      -- A text field the layout presents as a MediaDisplay; the runtime only
+      -- feeds it the camera's preview string.
+      media     = function(d) return {ControlType = "Text", PinStyle = "Output"} end,
       led       = function(d) return {ControlType = "Indicator", IndicatorType = "Led", DefaultValue = false, PinStyle = "Output"} end,
       status    = function(d) return {ControlType = "Indicator", IndicatorType = "Status", PinStyle = "Output"} end,
       trigger   = function(d) return {ControlType = "Button", ButtonType = "Trigger", PinStyle = "Input"} end,
@@ -875,6 +881,9 @@ function GetControlLayout(props)
         FontSize = fsM, HTextAlign = "Center", Color = Palette.White, Padding = 2,
         StrokeWidth = 1, Position = {foX, 314}, Size = {foW, 16}}
   
+      -- Tracks the lowest group so far, so Preview follows whatever precedes it.
+      local pageBottom = focusTop + focusGH
+  
       -- Presets group (right column, under the PTZ block; single row of presets)
       if NumPresets > 0 then
         local presetGX  = ptzGX
@@ -906,7 +915,23 @@ function GetControlLayout(props)
             Position = {btnX0 + col * hB, btnRow + row * hB}, Size = {hB, hB}
           }
         end
+        pageBottom = presetTop + presetGH
       end
+  
+      -- Camera Preview -----------------------------------------------------------
+      -- A text field presented as a MediaDisplay; the runtime feeds it the
+      -- camera's own preview string.
+      local previewTop = pageBottom + 12
+      local previewGH  = 204
+      table.insert(graphics, {
+        Type = "GroupBox", Text = "Camera Preview", FontSize = fs1, HTextAlign = "Left",
+        Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
+        CornerRadius = 8, Position = {ptzGX, previewTop}, Size = {PLUGIN_W, previewGH}
+      })
+      layout["preview"] = {
+        PrettyName = "Preview", Style = "Text", PresentationType = "MediaDisplay",
+        Position = {ptzGX + 8, previewTop + 20}, Size = {PLUGIN_W - 16, previewGH - 28}
+      }
   
     else
   
@@ -1223,7 +1248,7 @@ if Controls then
           if (ch == nil or #ch == 0) and d.name == WB_MODE then ch = WB_MODE_CHOICES end
           ctl.Choices = ch or {}
           if s ~= nil and ctl.String ~= s then ctl.String = s end
-        elseif d.kind == "ro" or d.kind == "text" then
+        elseif d.kind == "ro" or d.kind == "text" or d.kind == "media" then
           -- Aperture, Shutter and friends already arrive formatted (f/1.8, 1/60).
           local s; pcall(function() s = cam[d.name].String end)
           if s ~= nil and ctl.String ~= s then ctl.String = s end
@@ -1882,7 +1907,7 @@ if Controls then
       end
     end
   
-    local READ_ONLY_KIND = {ro = true, led = true, status = true}
+    local READ_ONLY_KIND = {ro = true, led = true, status = true, media = true}
     for _, d in ipairs(CamCtls) do
       local ctl = Controls[d.name]
       if ctl ~= nil and not READ_ONLY_KIND[d.kind] then

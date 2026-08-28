@@ -153,7 +153,7 @@
         if (ch == nil or #ch == 0) and d.name == WB_MODE then ch = WB_MODE_CHOICES end
         ctl.Choices = ch or {}
         if s ~= nil and ctl.String ~= s then ctl.String = s end
-      elseif d.kind == "ro" or d.kind == "text" then
+      elseif d.kind == "ro" or d.kind == "text" or d.kind == "media" then
         -- Aperture, Shutter and friends already arrive formatted (f/1.8, 1/60).
         local s; pcall(function() s = cam[d.name].String end)
         if s ~= nil and ctl.String ~= s then ctl.String = s end
@@ -812,7 +812,7 @@
     end
   end
 
-  local READ_ONLY_KIND = {ro = true, led = true, status = true}
+  local READ_ONLY_KIND = {ro = true, led = true, status = true, media = true}
   for _, d in ipairs(CamCtls) do
     local ctl = Controls[d.name]
     if ctl ~= nil and not READ_ONLY_KIND[d.kind] then

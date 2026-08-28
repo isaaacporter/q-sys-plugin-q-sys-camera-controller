@@ -277,6 +277,9 @@
       FontSize = fsM, HTextAlign = "Center", Color = Palette.White, Padding = 2,
       StrokeWidth = 1, Position = {foX, 314}, Size = {foW, 16}}
 
+    -- Tracks the lowest group so far, so Preview follows whatever precedes it.
+    local pageBottom = focusTop + focusGH
+
     -- Presets group (right column, under the PTZ block; single row of presets)
     if NumPresets > 0 then
       local presetGX  = ptzGX
@@ -308,7 +311,23 @@
           Position = {btnX0 + col * hB, btnRow + row * hB}, Size = {hB, hB}
         }
       end
+      pageBottom = presetTop + presetGH
     end
+
+    -- Camera Preview -----------------------------------------------------------
+    -- A text field presented as a MediaDisplay; the runtime feeds it the
+    -- camera's own preview string.
+    local previewTop = pageBottom + 12
+    local previewGH  = 204
+    table.insert(graphics, {
+      Type = "GroupBox", Text = "Camera Preview", FontSize = fs1, HTextAlign = "Left",
+      Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
+      CornerRadius = 8, Position = {ptzGX, previewTop}, Size = {PLUGIN_W, previewGH}
+    })
+    layout["preview"] = {
+      PrettyName = "Preview", Style = "Text", PresentationType = "MediaDisplay",
+      Position = {ptzGX + 8, previewTop + 20}, Size = {PLUGIN_W - 16, previewGH - 28}
+    }
 
   else
 

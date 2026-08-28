@@ -179,6 +179,9 @@
     bool      = function(d) return {ControlType = "Button", ButtonType = "Toggle", PinStyle = "Both"} end,
     enum      = function(d) return {ControlType = "Text", PinStyle = "Both"} end,
     ro        = function(d) return {ControlType = "Indicator", IndicatorType = "Text", PinStyle = "Output"} end,
+    -- A text field the layout presents as a MediaDisplay; the runtime only
+    -- feeds it the camera's preview string.
+    media     = function(d) return {ControlType = "Text", PinStyle = "Output"} end,
     led       = function(d) return {ControlType = "Indicator", IndicatorType = "Led", DefaultValue = false, PinStyle = "Output"} end,
     status    = function(d) return {ControlType = "Indicator", IndicatorType = "Status", PinStyle = "Output"} end,
     trigger   = function(d) return {ControlType = "Button", ButtonType = "Trigger", PinStyle = "Input"} end,
