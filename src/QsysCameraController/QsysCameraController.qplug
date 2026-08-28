@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.6.3.0",
-  BuildVersion = "1.6.3.0",
+  Version = "1.6.4.0",
+  BuildVersion = "1.6.4.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -586,17 +586,20 @@ function GetControls(props)
     -- Preview overlay pad -------------------------------------------------------
     -- Drives the same camera controls as the main pad, but these are UI-only:
     -- they carry the camera's own control names and no pin.
+    -- Underscored names, NOT the camera's dotted ones: Q-SYS reads a dot as
+    -- hierarchy, so "pan.left" and "pan.left.tilt.up" cannot both exist -- the
+    -- parent and its children collapse and only four buttons survive.
     local previewPad = {
-      {name = "pan.left.tilt.up",    icon = "Arrow Left-Up",    pretty = "Pan Left / Tilt Up"},
-      {name = "tilt.up",             icon = "Arrow Up",         pretty = "Tilt Up"},
-      {name = "pan.right.tilt.up",   icon = "Arrow Right-Up",   pretty = "Pan Right / Tilt Up"},
-      {name = "pan.left",            icon = "Arrow Left",       pretty = "Pan Left"},
-      {name = "pan.right",           icon = "Arrow Right",      pretty = "Pan Right"},
-      {name = "pan.left.tilt.down",  icon = "Arrow Left-Down",  pretty = "Pan Left / Tilt Down"},
-      {name = "tilt.down",           icon = "Arrow Down",       pretty = "Tilt Down"},
-      {name = "pan.right.tilt.down", icon = "Arrow Right-Down", pretty = "Pan Right / Tilt Down"},
-      {name = "zoom.in",             icon = "Zoom In",          pretty = "Zoom In"},
-      {name = "zoom.out",            icon = "Zoom Out",         pretty = "Zoom Out"}
+      {name = "preview_up_left",    icon = "Arrow Left-Up",    pretty = "Pan Left / Tilt Up"},
+      {name = "preview_tilt_up",    icon = "Arrow Up",         pretty = "Tilt Up"},
+      {name = "preview_up_right",   icon = "Arrow Right-Up",   pretty = "Pan Right / Tilt Up"},
+      {name = "preview_pan_left",   icon = "Arrow Left",       pretty = "Pan Left"},
+      {name = "preview_pan_right",  icon = "Arrow Right",      pretty = "Pan Right"},
+      {name = "preview_down_left",  icon = "Arrow Left-Down",  pretty = "Pan Left / Tilt Down"},
+      {name = "preview_tilt_down",  icon = "Arrow Down",       pretty = "Tilt Down"},
+      {name = "preview_down_right", icon = "Arrow Right-Down", pretty = "Pan Right / Tilt Down"},
+      {name = "preview_zoom_in",    icon = "Zoom In",          pretty = "Zoom In"},
+      {name = "preview_zoom_out",   icon = "Zoom Out",         pretty = "Zoom Out"}
     }
     for _, b in ipairs(previewPad) do
       table.insert(ctrls, {
@@ -973,20 +976,21 @@ function GetControlLayout(props)
       local pvStep = math.floor((pvR - pvL) / 4)
   
       local pvPad = {
-        {"pan.left.tilt.up",    "Pan Left / Tilt Up",    pvL,           pvT},
-        {"zoom.out",            "Zoom Out",              pvL + pvStep,  pvT},
-        {"tilt.up",             "Tilt Up",               pvMidX,        pvT},
-        {"zoom.in",             "Zoom In",               pvR - pvStep,  pvT},
-        {"pan.right.tilt.up",   "Pan Right / Tilt Up",   pvR,           pvT},
-        {"pan.left",            "Pan Left",              pvL,           pvMidY},
-        {"pan.right",           "Pan Right",             pvR,           pvMidY},
-        {"pan.left.tilt.down",  "Pan Left / Tilt Down",  pvL,           pvBot},
-        {"tilt.down",           "Tilt Down",             pvMidX,        pvBot},
-        {"pan.right.tilt.down", "Pan Right / Tilt Down", pvR,           pvBot}
+        {"preview_up_left",    "Pan Left / Tilt Up",    pvL,           pvT},
+        {"preview_zoom_out",   "Zoom Out",              pvL + pvStep,  pvT},
+        {"preview_tilt_up",    "Tilt Up",               pvMidX,        pvT},
+        {"preview_zoom_in",    "Zoom In",               pvR - pvStep,  pvT},
+        {"preview_up_right",   "Pan Right / Tilt Up",   pvR,           pvT},
+        {"preview_pan_left",   "Pan Left",              pvL,           pvMidY},
+        {"preview_pan_right",  "Pan Right",             pvR,           pvMidY},
+        {"preview_down_left",  "Pan Left / Tilt Down",  pvL,           pvBot},
+        {"preview_tilt_down",  "Tilt Down",             pvMidX,        pvBot},
+        {"preview_down_right", "Pan Right / Tilt Down", pvR,           pvBot}
       }
       for _, b in ipairs(pvPad) do
         layout[b[1]] = {
           PrettyName = b[2], Legend = "", Style = "Button",
+          Color = Palette.White, OffColor = {0, 0, 0, 0}, UnlinkOffColor = true,
           StrokeColor = {105, 105, 105}, StrokeWidth = 1,
           CornerRadius = 2, Margin = 5, Padding = 0,
           Position = {b[3], b[4]}, Size = {pvB, pvB}
@@ -1929,19 +1933,27 @@ if Controls then
       end
     end
   
-    -- Preview overlay pad. These controls carry the camera's own control names,
-    -- so each drives the identically named control on the active camera.
-    for _, n in ipairs({"pan.left", "pan.right", "tilt.up", "tilt.down", "zoom.in", "zoom.out"}) do
-      local ctl = Controls[n]
+    -- Preview overlay pad: a second set of buttons onto the same camera controls
+    -- as the main pad.
+    local PREVIEW_MAP = {
+      preview_pan_left  = "pan.left",
+      preview_pan_right = "pan.right",
+      preview_tilt_up   = "tilt.up",
+      preview_tilt_down = "tilt.down",
+      preview_zoom_in   = "zoom.in",
+      preview_zoom_out  = "zoom.out"
+    }
+    for name, target in pairs(PREVIEW_MAP) do
+      local ctl = Controls[name]
       if ctl ~= nil then
-        ctl.EventHandler = function(c) SetCtl(n, c.Boolean) end
+        ctl.EventHandler = function(c) SetCtl(target, c.Boolean) end
       end
     end
     local PREVIEW_DIAG = {
-      ["pan.left.tilt.up"]    = DIAG_MAP.ptz_up_left,
-      ["pan.right.tilt.up"]   = DIAG_MAP.ptz_up_right,
-      ["pan.left.tilt.down"]  = DIAG_MAP.ptz_down_left,
-      ["pan.right.tilt.down"] = DIAG_MAP.ptz_down_right
+      preview_up_left    = DIAG_MAP.ptz_up_left,
+      preview_up_right   = DIAG_MAP.ptz_up_right,
+      preview_down_left  = DIAG_MAP.ptz_down_left,
+      preview_down_right = DIAG_MAP.ptz_down_right
     }
     for name, def in pairs(PREVIEW_DIAG) do
       local ctl = Controls[name]

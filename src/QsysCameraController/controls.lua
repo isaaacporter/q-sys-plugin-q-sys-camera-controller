@@ -203,17 +203,20 @@
   -- Preview overlay pad -------------------------------------------------------
   -- Drives the same camera controls as the main pad, but these are UI-only:
   -- they carry the camera's own control names and no pin.
+  -- Underscored names, NOT the camera's dotted ones: Q-SYS reads a dot as
+  -- hierarchy, so "pan.left" and "pan.left.tilt.up" cannot both exist -- the
+  -- parent and its children collapse and only four buttons survive.
   local previewPad = {
-    {name = "pan.left.tilt.up",    icon = "Arrow Left-Up",    pretty = "Pan Left / Tilt Up"},
-    {name = "tilt.up",             icon = "Arrow Up",         pretty = "Tilt Up"},
-    {name = "pan.right.tilt.up",   icon = "Arrow Right-Up",   pretty = "Pan Right / Tilt Up"},
-    {name = "pan.left",            icon = "Arrow Left",       pretty = "Pan Left"},
-    {name = "pan.right",           icon = "Arrow Right",      pretty = "Pan Right"},
-    {name = "pan.left.tilt.down",  icon = "Arrow Left-Down",  pretty = "Pan Left / Tilt Down"},
-    {name = "tilt.down",           icon = "Arrow Down",       pretty = "Tilt Down"},
-    {name = "pan.right.tilt.down", icon = "Arrow Right-Down", pretty = "Pan Right / Tilt Down"},
-    {name = "zoom.in",             icon = "Zoom In",          pretty = "Zoom In"},
-    {name = "zoom.out",            icon = "Zoom Out",         pretty = "Zoom Out"}
+    {name = "preview_up_left",    icon = "Arrow Left-Up",    pretty = "Pan Left / Tilt Up"},
+    {name = "preview_tilt_up",    icon = "Arrow Up",         pretty = "Tilt Up"},
+    {name = "preview_up_right",   icon = "Arrow Right-Up",   pretty = "Pan Right / Tilt Up"},
+    {name = "preview_pan_left",   icon = "Arrow Left",       pretty = "Pan Left"},
+    {name = "preview_pan_right",  icon = "Arrow Right",      pretty = "Pan Right"},
+    {name = "preview_down_left",  icon = "Arrow Left-Down",  pretty = "Pan Left / Tilt Down"},
+    {name = "preview_tilt_down",  icon = "Arrow Down",       pretty = "Tilt Down"},
+    {name = "preview_down_right", icon = "Arrow Right-Down", pretty = "Pan Right / Tilt Down"},
+    {name = "preview_zoom_in",    icon = "Zoom In",          pretty = "Zoom In"},
+    {name = "preview_zoom_out",   icon = "Zoom Out",         pretty = "Zoom Out"}
   }
   for _, b in ipairs(previewPad) do
     table.insert(ctrls, {

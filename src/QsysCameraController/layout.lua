@@ -343,20 +343,21 @@
     local pvStep = math.floor((pvR - pvL) / 4)
 
     local pvPad = {
-      {"pan.left.tilt.up",    "Pan Left / Tilt Up",    pvL,           pvT},
-      {"zoom.out",            "Zoom Out",              pvL + pvStep,  pvT},
-      {"tilt.up",             "Tilt Up",               pvMidX,        pvT},
-      {"zoom.in",             "Zoom In",               pvR - pvStep,  pvT},
-      {"pan.right.tilt.up",   "Pan Right / Tilt Up",   pvR,           pvT},
-      {"pan.left",            "Pan Left",              pvL,           pvMidY},
-      {"pan.right",           "Pan Right",             pvR,           pvMidY},
-      {"pan.left.tilt.down",  "Pan Left / Tilt Down",  pvL,           pvBot},
-      {"tilt.down",           "Tilt Down",             pvMidX,        pvBot},
-      {"pan.right.tilt.down", "Pan Right / Tilt Down", pvR,           pvBot}
+      {"preview_up_left",    "Pan Left / Tilt Up",    pvL,           pvT},
+      {"preview_zoom_out",   "Zoom Out",              pvL + pvStep,  pvT},
+      {"preview_tilt_up",    "Tilt Up",               pvMidX,        pvT},
+      {"preview_zoom_in",    "Zoom In",               pvR - pvStep,  pvT},
+      {"preview_up_right",   "Pan Right / Tilt Up",   pvR,           pvT},
+      {"preview_pan_left",   "Pan Left",              pvL,           pvMidY},
+      {"preview_pan_right",  "Pan Right",             pvR,           pvMidY},
+      {"preview_down_left",  "Pan Left / Tilt Down",  pvL,           pvBot},
+      {"preview_tilt_down",  "Tilt Down",             pvMidX,        pvBot},
+      {"preview_down_right", "Pan Right / Tilt Down", pvR,           pvBot}
     }
     for _, b in ipairs(pvPad) do
       layout[b[1]] = {
         PrettyName = b[2], Legend = "", Style = "Button",
+        Color = Palette.White, OffColor = {0, 0, 0, 0}, UnlinkOffColor = true,
         StrokeColor = {105, 105, 105}, StrokeWidth = 1,
         CornerRadius = 2, Margin = 5, Padding = 0,
         Position = {b[3], b[4]}, Size = {pvB, pvB}

@@ -774,19 +774,27 @@
     end
   end
 
-  -- Preview overlay pad. These controls carry the camera's own control names,
-  -- so each drives the identically named control on the active camera.
-  for _, n in ipairs({"pan.left", "pan.right", "tilt.up", "tilt.down", "zoom.in", "zoom.out"}) do
-    local ctl = Controls[n]
+  -- Preview overlay pad: a second set of buttons onto the same camera controls
+  -- as the main pad.
+  local PREVIEW_MAP = {
+    preview_pan_left  = "pan.left",
+    preview_pan_right = "pan.right",
+    preview_tilt_up   = "tilt.up",
+    preview_tilt_down = "tilt.down",
+    preview_zoom_in   = "zoom.in",
+    preview_zoom_out  = "zoom.out"
+  }
+  for name, target in pairs(PREVIEW_MAP) do
+    local ctl = Controls[name]
     if ctl ~= nil then
-      ctl.EventHandler = function(c) SetCtl(n, c.Boolean) end
+      ctl.EventHandler = function(c) SetCtl(target, c.Boolean) end
     end
   end
   local PREVIEW_DIAG = {
-    ["pan.left.tilt.up"]    = DIAG_MAP.ptz_up_left,
-    ["pan.right.tilt.up"]   = DIAG_MAP.ptz_up_right,
-    ["pan.left.tilt.down"]  = DIAG_MAP.ptz_down_left,
-    ["pan.right.tilt.down"] = DIAG_MAP.ptz_down_right
+    preview_up_left    = DIAG_MAP.ptz_up_left,
+    preview_up_right   = DIAG_MAP.ptz_up_right,
+    preview_down_left  = DIAG_MAP.ptz_down_left,
+    preview_down_right = DIAG_MAP.ptz_down_right
   }
   for name, def in pairs(PREVIEW_DIAG) do
     local ctl = Controls[name]
