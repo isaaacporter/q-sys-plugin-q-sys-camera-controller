@@ -358,8 +358,9 @@
           UnlinkOffColor = true, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "status" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
-          HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
+        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
+          HTextAlign = "Center", Color = d.fill or Palette.White,
+          TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "led" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",

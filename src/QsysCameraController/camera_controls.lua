@@ -158,21 +158,21 @@ CamCtls = {
   {page = "Status", group = "Status", col = 1, row = 2, x = 8, w = 18,
    name = "camera.status.led", pretty = "Status~Status Indicator", label = "", kind = "led"},
   {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387,
-   name = "camera.status", pretty = "Status~Status Bar", label = "", kind = "status"},
+   name = "camera.status", fill = Palette.ro_grey, pretty = "Status~Status Bar", label = "", kind = "status"},
 
   {page = "Status", group = "Network", col = 1, row = 1,
-   name = "ip.address", pretty = "Status~Network IP Address", label = "IP Address", kind = "ro"},
+   name = "ip.address", fill = Palette.ro_grey, pretty = "Status~Network IP Address", label = "IP Address", kind = "ro"},
   {page = "Status", group = "Network", col = 1, row = 2,
    name = "network.flow.control", pretty = "Status~Network Flow Control", label = "Flow Control", kind = "bool"},
   {page = "Status", group = "Network", col = 1, row = 3,
    name = "multislice.toggle", pretty = "Status~Network Traffic Shaping", label = "Traffic Shaping", kind = "bool"},
 
   {page = "Status", group = "Hardware Details", col = 1, row = 1,
-   name = "textc.model", pretty = "Status~HW Model", label = "Model", kind = "ro"},
+   name = "textc.model", fill = Palette.ro_grey, pretty = "Status~HW Model", label = "Model", kind = "ro"},
   {page = "Status", group = "Hardware Details", col = 1, row = 2,
-   name = "textc.mac", pretty = "Status~HW MAC Address", label = "MAC Address", kind = "ro"},
+   name = "textc.mac", fill = Palette.ro_grey, pretty = "Status~HW MAC Address", label = "MAC Address", kind = "ro"},
   {page = "Status", group = "Hardware Details", col = 1, row = 3,
-   name = "textc.serial", pretty = "Status~HW S/N", label = "Serial Number", kind = "ro"}
+   name = "textc.serial", fill = Palette.ro_grey, pretty = "Status~HW S/N", label = "Serial Number", kind = "ro"}
 }
 
 -- Group boxes in the order they stack down each page.
@@ -206,9 +206,9 @@ CamGroups = {
    -- button shares the heading row with it.
    cols = {{ctlX = 107, ctlW = 160, hdrW = 120}, {ctlX = 272, ctlW = 160}},
    headers = {"Preview Stream", "Mediacast Stream"}},
-  {page = "Status",       name = "Status",           rows = 2, style = "cols1"},
-  {page = "Status",       name = "Network",          rows = 3, style = "cols1"},
-  {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1"}
+  {page = "Status",       name = "Status",           rows = 2, style = "cols1", y = 0,   h = 83, w = 435},
+  {page = "Status",       name = "Network",          rows = 3, style = "cols1", y = 99,  h = 81, w = 435},
+  {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1", y = 180, h = 78, w = 435}
 }
 
 -- Page-level trigger buttons that sit above the first group box.
