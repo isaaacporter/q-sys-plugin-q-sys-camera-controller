@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.14.0",
-  BuildVersion = "1.5.14.0",
+  Version = "1.5.15.0",
+  BuildVersion = "1.5.15.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -266,7 +266,7 @@ CamGroups = {
    cols = {{ctlX = 107, ctlW = 160, hdrW = 120}, {ctlX = 272, ctlW = 160}},
    headers = {"Preview Stream", "Mediacast Stream"}},
   {page = "Status",       name = "Status",           rows = 2, style = "cols1", y = 0,   h = 83, w = 435, cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 192}}},
-  {page = "Status",       name = "Network",          rows = 3, style = "cols1", y = 99,  h = 81, w = 435},
+  {page = "Status",       name = "Network",          rows = 3, style = "cols1", y = 99,  h = 81, w = 435, cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 128}}},
   {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1", y = 180, h = 78, w = 435, cols = {{lblX = 4, lblW = 112, ctlX = 119, ctlW = 304}}}
 }
 
@@ -969,12 +969,13 @@ function GetControlLayout(props)
           -- legendOff is the starting caption; the runtime swaps it with the state.
           layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",
             FontSize = fsM, Style = "Button",
-            Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
+            Color = d.fill or Palette.btn_green, OffColor = d.offFill or Palette.green_off,
+            UnlinkOffColor = true,
             Margin = 2, Position = {x, y}, Size = {d.w or 32, ctlH}}
         elseif d.kind == "statetrig" then
           layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or "", FontSize = fsM,
             Style = "Button", Color = d.fill or Palette.btn_green,
-            OffColor = Palette.gray_off, UnlinkOffColor = true,
+            OffColor = d.offFill or Palette.gray_off, UnlinkOffColor = true,
             Margin = 2, Position = {x, y}, Size = {d.w or 32, d.h or ctlH}}
         elseif d.kind == "trigger" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",

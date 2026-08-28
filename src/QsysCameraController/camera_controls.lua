@@ -210,7 +210,7 @@ CamGroups = {
    cols = {{ctlX = 107, ctlW = 160, hdrW = 120}, {ctlX = 272, ctlW = 160}},
    headers = {"Preview Stream", "Mediacast Stream"}},
   {page = "Status",       name = "Status",           rows = 2, style = "cols1", y = 0,   h = 83, w = 435, cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 192}}},
-  {page = "Status",       name = "Network",          rows = 3, style = "cols1", y = 99,  h = 81, w = 435},
+  {page = "Status",       name = "Network",          rows = 3, style = "cols1", y = 99,  h = 81, w = 435, cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 128}}},
   {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1", y = 180, h = 78, w = 435, cols = {{lblX = 4, lblW = 112, ctlX = 119, ctlW = 304}}}
 }
 

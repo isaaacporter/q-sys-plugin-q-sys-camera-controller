@@ -371,12 +371,13 @@
         -- legendOff is the starting caption; the runtime swaps it with the state.
         layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",
           FontSize = fsM, Style = "Button",
-          Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
+          Color = d.fill or Palette.btn_green, OffColor = d.offFill or Palette.green_off,
+          UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {d.w or 32, ctlH}}
       elseif d.kind == "statetrig" then
         layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or "", FontSize = fsM,
           Style = "Button", Color = d.fill or Palette.btn_green,
-          OffColor = Palette.gray_off, UnlinkOffColor = true,
+          OffColor = d.offFill or Palette.gray_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {d.w or 32, d.h or ctlH}}
       elseif d.kind == "trigger" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
