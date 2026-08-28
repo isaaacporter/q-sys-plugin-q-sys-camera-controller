@@ -14,6 +14,7 @@ Palette = {
   green_off = {0, 75, 22},      -- #004B16
   gray_off  = {137, 137, 137},  -- #898989
   text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
+  ro_grey   = {194, 194, 194},  -- #ffc2c2c2  fill for a greyed read-only readout
   meter_on  = {124, 155, 207},  -- #ff7c9bcf  filled portion of every value meter
   meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }

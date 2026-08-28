@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.6.0",
-  BuildVersion = "1.5.6.0",
+  Version = "1.5.7.0",
+  BuildVersion = "1.5.7.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -39,6 +39,7 @@ Palette = {
   green_off = {0, 75, 22},      -- #004B16
   gray_off  = {137, 137, 137},  -- #898989
   text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
+  ro_grey   = {194, 194, 194},  -- #ffc2c2c2  fill for a greyed read-only readout
   meter_on  = {124, 155, 207},  -- #ff7c9bcf  filled portion of every value meter
   meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }
@@ -177,11 +178,11 @@ CamCtls = {
    name = "ip.streams.preview.enable", pretty = "IP Stream~Preview Stream Enable", label = "", kind = "bool",
    legend = "Enable"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 2, rowlabel = "RTSP URL",
-   name = "ip.streams.preview.rtsp.url", pretty = "IP Stream~Preview Stream RTSP URL", label = "", kind = "ro"},
+   name = "ip.streams.preview.rtsp.url", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream RTSP URL", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 3, rowlabel = "RTP Address",
-   name = "ip.streams.preview.rtp.address", pretty = "IP Stream~Preview Stream RTP Address", label = "", kind = "ro"},
+   name = "ip.streams.preview.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream RTP Address", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 3,
-   name = "ip.streams.lbr.rtp.address", pretty = "IP Stream~Mediacast Stream RTP Address", label = "", kind = "ro"},
+   name = "ip.streams.lbr.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Mediacast Stream RTP Address", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, rowlabel = "Streaming Mode", w = 88,
    name = "ip.streams.preview.streaming.mode", pretty = "IP Stream~Preview Stream Streaming Mode", label = "", kind = "enum"},
   -- No discoverable range for the frame rate, so it stays an editable text
@@ -189,9 +190,9 @@ CamCtls = {
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, x = 246, w = 44,
    name = "ip.streams.preview.streaming.mode.fps", pretty = "IP Stream~Preview Stream Frame Rate", label = "", kind = "text"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 5, rowlabel = "Video Format",
-   name = "ip.streams.preview.video.format", pretty = "IP Stream~Preview Stream Video Format", label = "", kind = "ro"},
+   name = "ip.streams.preview.video.format", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream Video Format", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 5,
-   name = "ip.streams.lbr.video.format", pretty = "IP Stream~Mediacast Stream Video Format", label = "", kind = "ro"},
+   name = "ip.streams.lbr.video.format", fill = Palette.ro_grey, pretty = "IP Stream~Mediacast Stream Video Format", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 6, rowlabel = "Max Bitrate (Mbps)",
    name = "ip.streams.preview.max.bitrate", pretty = "IP Stream~Preview Stream Max Bitrate", label = "", kind = "float", min = 0.5, max = 2.0},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 6,
@@ -926,8 +927,9 @@ function GetControlLayout(props)
             HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "ro" then
+          local fill = d.fill or Palette.White
           layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
-            HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White,
+            HTextAlign = "Center", Color = fill, OffColor = fill,
             UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "text" then

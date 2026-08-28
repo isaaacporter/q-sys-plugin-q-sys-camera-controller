@@ -347,8 +347,9 @@
           HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "ro" then
+        local fill = d.fill or Palette.White
         layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
-          HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White,
+          HTextAlign = "Center", Color = fill, OffColor = fill,
           UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "text" then
