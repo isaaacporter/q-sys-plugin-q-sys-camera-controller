@@ -180,7 +180,11 @@ CamCtls = {
 -- automatically at 11 + rows*19.
 CamGroups = {
   {page = "Imaging",      name = "Imaging",         rows = 2, style = "cols2", y = 16,  h = 59},
-  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2", y = 91,  h = 135},
+  -- Exposure's left column is a wider label over a narrower control than the
+  -- Imaging group's, so it carries its own column geometry.
+  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2", y = 91,  h = 135,
+   cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 96},
+           {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}}},
   {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2", y = 242, h = 116},
   {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2", y = 374, h = 40},
   {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432},

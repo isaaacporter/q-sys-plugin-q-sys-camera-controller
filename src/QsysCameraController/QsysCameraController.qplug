@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.1.0",
-  BuildVersion = "1.5.1.0",
+  Version = "1.5.2.0",
+  BuildVersion = "1.5.2.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -229,7 +229,11 @@ CamCtls = {
 -- automatically at 11 + rows*19.
 CamGroups = {
   {page = "Imaging",      name = "Imaging",         rows = 2, style = "cols2", y = 16,  h = 59},
-  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2", y = 91,  h = 135},
+  -- Exposure's left column is a wider label over a narrower control than the
+  -- Imaging group's, so it carries its own column geometry.
+  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2", y = 91,  h = 135,
+   cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 96},
+           {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}}},
   {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2", y = 242, h = 116},
   {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2", y = 374, h = 40},
   {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432},
@@ -907,13 +911,13 @@ function GetControlLayout(props)
             UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "enum" then
-          layout[d.name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fs1,
+          layout[d.name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fsM,
             HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "ro" then
-          layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+          layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
             HTextAlign = "Center", Color = Palette.meter_off, OffColor = Palette.meter_off,
-            UnlinkOffColor = true, TextColor = Palette.Gray, Padding = 2, StrokeWidth = 1,
+            UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "text" then
           layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
@@ -931,11 +935,11 @@ function GetControlLayout(props)
         elseif d.kind == "bool" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
             Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
-            Margin = 3, Position = {x, y}, Size = {44, ctlH}}
+            Margin = 2, Position = {x, y}, Size = {32, ctlH}}
         elseif d.kind == "trigger" or d.kind == "statetrig" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
             Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-            Margin = 3, Position = {x, y}, Size = {math.min(w, 44), ctlH}}
+            Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
         end
       end
   
@@ -989,7 +993,8 @@ function GetControlLayout(props)
                 local x = d.x or (4 + lblW1 + 12)
                 PlaceCtl(d, x, ry, d.w or (GRP_W - (4 + lblW1 + 12) - 8))
               else
-                local c = COL[d.col]
+                -- A group may override the default column geometry.
+                local c = (g.cols or COL)[d.col]
                 if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
                 PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
               end

@@ -343,13 +343,13 @@
           UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "enum" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fs1,
+        layout[d.name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fsM,
           HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "ro" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
+        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
           HTextAlign = "Center", Color = Palette.meter_off, OffColor = Palette.meter_off,
-          UnlinkOffColor = true, TextColor = Palette.Gray, Padding = 2, StrokeWidth = 1,
+          UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "text" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
@@ -367,11 +367,11 @@
       elseif d.kind == "bool" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
           Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
-          Margin = 3, Position = {x, y}, Size = {44, ctlH}}
+          Margin = 2, Position = {x, y}, Size = {32, ctlH}}
       elseif d.kind == "trigger" or d.kind == "statetrig" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
           Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-          Margin = 3, Position = {x, y}, Size = {math.min(w, 44), ctlH}}
+          Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
       end
     end
 
@@ -425,7 +425,8 @@
               local x = d.x or (4 + lblW1 + 12)
               PlaceCtl(d, x, ry, d.w or (GRP_W - (4 + lblW1 + 12) - 8))
             else
-              local c = COL[d.col]
+              -- A group may override the default column geometry.
+              local c = (g.cols or COL)[d.col]
               if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
               PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
             end
