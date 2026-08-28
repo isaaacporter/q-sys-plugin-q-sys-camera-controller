@@ -414,10 +414,12 @@
         if g.headers then
           for c, text in ipairs(g.headers) do
             local cc = PairCol(g, c)
+            -- A heading may be narrower than its column (Preview Stream sits
+            -- beside the Enable button).
             table.insert(graphics, {
               Type = "Text", Text = text, FontSize = fs1,
               HTextAlign = "Center", Color = Palette.text,
-              Position = {cc.ctlX, gy + 20}, Size = {cc.ctlW, 16}
+              Position = {cc.hdrX or cc.ctlX, gy + 20}, Size = {cc.hdrW or cc.ctlW, 16}
             })
           end
         end
@@ -440,6 +442,16 @@
               if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
               PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
             end
+          end
+        end
+        -- Static captions that belong to a row but have no control of their own.
+        for _, t2 in ipairs(CamTexts) do
+          if t2.page == CurrentPage and t2.group == g.name then
+            table.insert(graphics, {
+              Type = "Text", Text = t2.text, FontSize = t2.fs or fs1,
+              HTextAlign = t2.align or "Left", Color = Palette.text,
+              Position = {t2.x, gy + 20 + (t2.row - 1) * rowStep}, Size = {t2.w, 16}
+            })
           end
         end
         y = gy + gh + 12

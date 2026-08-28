@@ -132,11 +132,11 @@ CamCtls = {
    name = "ip.streams.preview.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream RTP Address", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 3,
    name = "ip.streams.lbr.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Mediacast Stream RTP Address", label = "", kind = "ro"},
-  {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, rowlabel = "Streaming Mode", w = 88,
+  {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, rowlabel = "Streaming Mode", w = 106,
    name = "ip.streams.preview.streaming.mode", pretty = "IP Stream~Preview Stream Streaming Mode", label = "", kind = "enum"},
   -- No discoverable range for the frame rate, so it stays an editable text
   -- field rather than a meter that would render an invented fill.
-  {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, x = 246, w = 44,
+  {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, x = 215, w = 26,
    name = "ip.streams.preview.streaming.mode.fps", pretty = "IP Stream~Preview Stream Frame Rate", label = "", kind = "text"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 5, rowlabel = "Video Format",
    name = "ip.streams.preview.video.format", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream Video Format", label = "", kind = "ro"},
@@ -199,7 +199,9 @@ CamGroups = {
   {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
   {page = "Mediacast Streams", name = "IP Streams", rows = 7, style = "pairs",
    y = 0, h = 154, w = 436, lblW = 100,
-   cols = {{ctlX = 107, ctlW = 120}, {ctlX = 272, ctlW = 160}},
+   -- The Preview heading is narrower than its column, because the Enable
+   -- button shares the heading row with it.
+   cols = {{ctlX = 107, ctlW = 160, hdrW = 120}, {ctlX = 272, ctlW = 160}},
    headers = {"Preview Stream", "Mediacast Stream"}},
   {page = "Status",       name = "Status",           rows = 2, style = "cols1"},
   {page = "Status",       name = "Network",          rows = 3, style = "cols1"},
@@ -210,6 +212,11 @@ CamGroups = {
 CamPageTriggers = {
   {page = "Imaging", name = "setup.reset.settings", pretty = "Imaging~Reset Cam Settings",
    label = "Reset all Camera settings (Imaging, PTZ, and Focus)"}
+}
+
+-- Static captions that sit on a row but have no control behind them.
+CamTexts = {
+  {page = "Mediacast Streams", group = "IP Streams", row = 4, x = 243, w = 26, text = "fps"}
 }
 
 -- Fast lookup by control name.
