@@ -348,8 +348,8 @@
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "ro" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
-          HTextAlign = "Center", Color = Palette.meter_off, OffColor = Palette.meter_off,
-          UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+          HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White,
+          UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "text" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,

@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.2.0",
-  BuildVersion = "1.5.2.0",
+  Version = "1.5.3.0",
+  BuildVersion = "1.5.3.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -916,8 +916,8 @@ function GetControlLayout(props)
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "ro" then
           layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
-            HTextAlign = "Center", Color = Palette.meter_off, OffColor = Palette.meter_off,
-            UnlinkOffColor = true, TextColor = Palette.White, Padding = 2, StrokeWidth = 1,
+            HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White,
+            UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "text" then
           layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fs1,
