@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.0.0",
-  BuildVersion = "1.5.0.0",
+  Version = "1.5.1.0",
+  BuildVersion = "1.5.1.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -224,12 +224,15 @@ CamCtls = {
 --   cols2  label + control in each of two columns (the default)
 --   cols1  one right-aligned label column, control to its right
 --   pairs  row label at left, then a Preview and a Mediacast column
+-- y/h/w are the measured position and size, 4 less than Designer reports
+-- because of the plugin's inherent inset. Groups without them stack
+-- automatically at 11 + rows*19.
 CamGroups = {
-  {page = "Imaging",      name = "Imaging",         rows = 2, style = "cols2"},
-  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2"},
-  {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2"},
-  {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2"},
-  {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1"},
+  {page = "Imaging",      name = "Imaging",         rows = 2, style = "cols2", y = 16,  h = 59},
+  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2", y = 91,  h = 135},
+  {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2", y = 242, h = 116},
+  {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2", y = 374, h = 40},
+  {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432},
   {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
   {page = "Mediacast Streams",   name = "IP Streams",      rows = 7, style = "pairs",
    headers = {"Preview Stream", "Mediacast Stream"}},
@@ -956,11 +959,13 @@ function GetControlLayout(props)
   
       for _, g in ipairs(CamGroups) do
         if g.page == CurrentPage then
-          local gh = 11 + g.rows * rowStep
+          -- A group with measured y/h/w uses them; the rest stack automatically.
+          local gy = g.y or y
+          local gh = g.h or (11 + g.rows * rowStep)
           table.insert(graphics, {
             Type = "GroupBox", Text = g.name, FontSize = fs1, HTextAlign = "Left",
             Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
-            CornerRadius = 8, Position = {0, y}, Size = {GRP_W, gh}
+            CornerRadius = 8, Position = {0, gy}, Size = {g.w or GRP_W, gh}
           })
           -- Column headings above a paired table.
           if g.headers then
@@ -968,13 +973,13 @@ function GetControlLayout(props)
               table.insert(graphics, {
                 Type = "Text", Text = text, FontSize = fs1, FontStyle = "Bold",
                 HTextAlign = "Center", Color = Palette.text,
-                Position = {PairX(c), y + 20}, Size = {pColW, 16}
+                Position = {PairX(c), gy + 20}, Size = {pColW, 16}
               })
             end
           end
           for _, d in ipairs(CamCtls) do
             if d.page == CurrentPage and d.group == g.name then
-              local ry = y + 20 + (d.row - 1) * rowStep
+              local ry = gy + 20 + (d.row - 1) * rowStep
               if g.style == "pairs" then
                 if d.rowlabel then PlaceLabel(4, ry, pLblW, d.rowlabel) end
                 local x = d.x and (d.x) or PairX(d.col)
@@ -990,7 +995,7 @@ function GetControlLayout(props)
               end
             end
           end
-          y = y + gh + 12
+          y = gy + gh + 12
         end
       end
   

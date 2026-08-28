@@ -395,11 +395,13 @@
 
     for _, g in ipairs(CamGroups) do
       if g.page == CurrentPage then
-        local gh = 11 + g.rows * rowStep
+        -- A group with measured y/h/w uses them; the rest stack automatically.
+        local gy = g.y or y
+        local gh = g.h or (11 + g.rows * rowStep)
         table.insert(graphics, {
           Type = "GroupBox", Text = g.name, FontSize = fs1, HTextAlign = "Left",
           Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
-          CornerRadius = 8, Position = {0, y}, Size = {GRP_W, gh}
+          CornerRadius = 8, Position = {0, gy}, Size = {g.w or GRP_W, gh}
         })
         -- Column headings above a paired table.
         if g.headers then
@@ -407,13 +409,13 @@
             table.insert(graphics, {
               Type = "Text", Text = text, FontSize = fs1, FontStyle = "Bold",
               HTextAlign = "Center", Color = Palette.text,
-              Position = {PairX(c), y + 20}, Size = {pColW, 16}
+              Position = {PairX(c), gy + 20}, Size = {pColW, 16}
             })
           end
         end
         for _, d in ipairs(CamCtls) do
           if d.page == CurrentPage and d.group == g.name then
-            local ry = y + 20 + (d.row - 1) * rowStep
+            local ry = gy + 20 + (d.row - 1) * rowStep
             if g.style == "pairs" then
               if d.rowlabel then PlaceLabel(4, ry, pLblW, d.rowlabel) end
               local x = d.x and (d.x) or PairX(d.col)
@@ -429,7 +431,7 @@
             end
           end
         end
-        y = y + gh + 12
+        y = gy + gh + 12
       end
     end
 

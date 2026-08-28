@@ -175,12 +175,15 @@ CamCtls = {
 --   cols2  label + control in each of two columns (the default)
 --   cols1  one right-aligned label column, control to its right
 --   pairs  row label at left, then a Preview and a Mediacast column
+-- y/h/w are the measured position and size, 4 less than Designer reports
+-- because of the plugin's inherent inset. Groups without them stack
+-- automatically at 11 + rows*19.
 CamGroups = {
-  {page = "Imaging",      name = "Imaging",         rows = 2, style = "cols2"},
-  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2"},
-  {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2"},
-  {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2"},
-  {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1"},
+  {page = "Imaging",      name = "Imaging",         rows = 2, style = "cols2", y = 16,  h = 59},
+  {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2", y = 91,  h = 135},
+  {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2", y = 242, h = 116},
+  {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2", y = 374, h = 40},
+  {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432},
   {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
   {page = "Mediacast Streams",   name = "IP Streams",      rows = 7, style = "pairs",
    headers = {"Preview Stream", "Mediacast Stream"}},
