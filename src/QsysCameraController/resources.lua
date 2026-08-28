@@ -15,6 +15,9 @@ Palette = {
   gray_off  = {137, 137, 137},  -- #898989
   text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
   ro_grey   = {194, 194, 194},  -- #ffc2c2c2  fill for a greyed read-only readout
+  led_green = {0, 255, 0},      -- #ff00ff00  IP Streaming
+  led_red   = {255, 0, 0},      -- #ffff0000  Status
+  id_yellow = {248, 244, 0},    -- #fff8f400  Identify button
   meter_on  = {124, 155, 207},  -- #ff7c9bcf  filled portion of every value meter
   meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }

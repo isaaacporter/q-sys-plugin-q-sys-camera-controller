@@ -151,13 +151,16 @@ CamCtls = {
    name = "peak.frame.bitrate", pretty = "IP Stream~Mediacast Stream Peak Frame Bitrate", label = "", kind = "int", min = 30, max = 120},
 
   -- ===== Status page =====
-  {page = "Status", group = "Status", col = 1, row = 1,
-   name = "streaming.network", pretty = "Status~IP Streaming", label = "IP Streaming", kind = "led"},
-  {page = "Status", group = "Status", col = 1, row = 1, x = 380, w = 40,
-   name = "identify.state.trigger", pretty = "Status~Identify", label = "", kind = "statetrig"},
-  {page = "Status", group = "Status", col = 1, row = 2, x = 4, w = 16,
-   name = "camera.status.led", pretty = "Status~Status Indicator", label = "", kind = "led"},
-  {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387,
+  {page = "Status", group = "Status", col = 1, row = 1, x = 103, dy = 4,
+   name = "streaming.network", fill = Palette.led_green,
+   pretty = "Status~IP Streaming", label = "IP Streaming", kind = "led"},
+  {page = "Status", group = "Status", col = 1, row = 1, x = 389, w = 36, h = 24,
+   name = "identify.state.trigger", fill = Palette.id_yellow, legend = "ID",
+   pretty = "Status~Identify", label = "", kind = "statetrig"},
+  {page = "Status", group = "Status", col = 1, row = 2, x = 4, w = 16, dy = 16,
+   name = "camera.status.led", fill = Palette.led_red,
+   pretty = "Status~Status Indicator", label = "", kind = "led"},
+  {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387, dy = 16,
    name = "camera.status", fill = Palette.ro_grey, pretty = "Status~Status Bar", label = "", kind = "status"},
 
   {page = "Status", group = "Network", col = 1, row = 1,

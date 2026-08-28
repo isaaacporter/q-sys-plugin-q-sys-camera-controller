@@ -364,8 +364,9 @@
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "led" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
-          Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
-          StrokeWidth = 1, Margin = 3, Position = {x, y}, Size = {16, 16}}
+          Color = d.fill or Palette.green_on, OffColor = Palette.green_off,
+          UnlinkOffColor = true, StrokeWidth = 1, Margin = 3,
+          Position = {x, y}, Size = {16, 16}}
       elseif d.kind == "bool" then
         -- legendOff is the starting caption; the runtime swaps it with the state.
         layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",
@@ -373,9 +374,10 @@
           Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {d.w or 32, ctlH}}
       elseif d.kind == "statetrig" then
-        layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
-          Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true,
-          Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
+        layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or "", FontSize = fsM,
+          Style = "Button", Color = d.fill or Palette.btn_green,
+          OffColor = Palette.gray_off, UnlinkOffColor = true,
+          Margin = 2, Position = {x, y}, Size = {d.w or 32, d.h or ctlH}}
       elseif d.kind == "trigger" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
           Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
@@ -426,7 +428,9 @@
         end
         for _, d in ipairs(CamCtls) do
           if d.page == CurrentPage and d.group == g.name then
-            local ry = gy + 20 + (d.row - 1) * rowStep
+            -- dy nudges a control off its row baseline (the Status LEDs do not
+            -- sit level with their labels).
+            local ry = gy + 20 + (d.row - 1) * rowStep + (d.dy or 0)
             if g.style == "pairs" then
               local cc = PairCol(g, d.col)
               if d.rowlabel then PlaceLabel(4, ry, g.lblW or 100, d.rowlabel) end
