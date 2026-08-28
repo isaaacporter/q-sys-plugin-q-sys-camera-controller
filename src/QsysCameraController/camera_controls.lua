@@ -123,8 +123,9 @@ CamCtls = {
    name = "autoframe.outline.face", pretty = "Auto Framing~Outline Faces Enable", label = "Outline Faces", kind = "bool"},
 
   -- ===== IP Streams page (paired Preview / Mediacast columns) =====
-  {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 1, x = 216, w = 44,
-   name = "ip.streams.preview.enable", pretty = "IP Stream~Preview Stream Enable", label = "", kind = "bool"},
+  {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 1, x = 227, w = 40,
+   name = "ip.streams.preview.enable", pretty = "IP Stream~Preview Stream Enable", label = "", kind = "bool",
+   legend = "Enable"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 2, rowlabel = "RTSP URL",
    name = "ip.streams.preview.rtsp.url", pretty = "IP Stream~Preview Stream RTSP URL", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 3, rowlabel = "RTP Address",
@@ -196,7 +197,9 @@ CamGroups = {
   {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432,
    cols = {{lblX = 4, lblW = 150, ctlX = 158, ctlW = 150}}},
   {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
-  {page = "Mediacast Streams",   name = "IP Streams",      rows = 7, style = "pairs",
+  {page = "Mediacast Streams", name = "IP Streams", rows = 7, style = "pairs",
+   y = 0, h = 154, w = 436, lblW = 100,
+   cols = {{ctlX = 107, ctlW = 120}, {ctlX = 272, ctlW = 160}},
    headers = {"Preview Stream", "Mediacast Stream"}},
   {page = "Status",       name = "Status",           rows = 2, style = "cols1"},
   {page = "Status",       name = "Network",          rows = 3, style = "cols1"},

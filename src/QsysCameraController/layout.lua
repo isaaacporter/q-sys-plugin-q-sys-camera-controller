@@ -366,7 +366,7 @@
           StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
       elseif d.kind == "bool" then
         -- legendOff is the starting caption; the runtime swaps it with the state.
-        layout[d.name] = {PrettyName = d.pretty, Legend = d.legendOff or "",
+        layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",
           FontSize = fsM, Style = "Button",
           Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {d.w or 32, ctlH}}
@@ -394,10 +394,10 @@
       end
     end
 
-    -- Paired-column geometry, used by the IP Streams table.
-    local pLblW = 140
-    local pColW = 138
-    local function PairX(c) return 4 + pLblW + 4 + (c - 1) * (pColW + 4) end
+    -- Paired-column geometry, used by the IP Streams table. A pairs group
+    -- carries its own columns; this is only the fallback.
+    local PAIR_DEFAULT = {{ctlX = 107, ctlW = 120}, {ctlX = 272, ctlW = 160}}
+    local function PairCol(g, c) return (g.cols or PAIR_DEFAULT)[c] or PAIR_DEFAULT[c] end
 
     for _, g in ipairs(CamGroups) do
       if g.page == CurrentPage then
@@ -412,10 +412,11 @@
         -- Column headings above a paired table.
         if g.headers then
           for c, text in ipairs(g.headers) do
+            local cc = PairCol(g, c)
             table.insert(graphics, {
-              Type = "Text", Text = text, FontSize = fs1, FontStyle = "Bold",
+              Type = "Text", Text = text, FontSize = fs1,
               HTextAlign = "Center", Color = Palette.text,
-              Position = {PairX(c), gy + 20}, Size = {pColW, 16}
+              Position = {cc.ctlX, gy + 20}, Size = {cc.ctlW, 16}
             })
           end
         end
@@ -423,9 +424,9 @@
           if d.page == CurrentPage and d.group == g.name then
             local ry = gy + 20 + (d.row - 1) * rowStep
             if g.style == "pairs" then
-              if d.rowlabel then PlaceLabel(4, ry, pLblW, d.rowlabel) end
-              local x = d.x and (d.x) or PairX(d.col)
-              PlaceCtl(d, x, ry, d.w or pColW)
+              local cc = PairCol(g, d.col)
+              if d.rowlabel then PlaceLabel(4, ry, g.lblW or 100, d.rowlabel) end
+              PlaceCtl(d, d.x or cc.ctlX, ry, d.w or cc.ctlW)
             elseif g.style == "cols1" then
               local c = (g.cols and g.cols[1]) or
                         {lblX = 4, lblW = lblW1, ctlX = 4 + lblW1 + 12,
