@@ -141,6 +141,11 @@
       elseif d.kind == "bool" then
         local v; pcall(function() v = cam[d.name].Boolean end)
         if v ~= nil and ctl.Boolean ~= v then ctl.Boolean = v end
+        -- Some toggles caption themselves with their state (SDI/HDMI, A/B).
+        if v ~= nil and d.legendOn ~= nil then
+          local want = v and d.legendOn or d.legendOff
+          if ctl.Legend ~= want then ctl.Legend = want end
+        end
       elseif d.kind == "enum" then
         local ch, s
         pcall(function() ch = cam[d.name].Choices end)

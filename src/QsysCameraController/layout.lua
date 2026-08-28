@@ -365,9 +365,11 @@
           Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true,
           StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
       elseif d.kind == "bool" then
-        layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
+        -- legendOff is the starting caption; the runtime swaps it with the state.
+        layout[d.name] = {PrettyName = d.pretty, Legend = d.legendOff or "",
+          FontSize = fsM, Style = "Button",
           Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
-          Margin = 2, Position = {x, y}, Size = {32, ctlH}}
+          Margin = 2, Position = {x, y}, Size = {d.w or 32, ctlH}}
       elseif d.kind == "statetrig" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
           Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true,
@@ -425,9 +427,11 @@
               local x = d.x and (d.x) or PairX(d.col)
               PlaceCtl(d, x, ry, d.w or pColW)
             elseif g.style == "cols1" then
-              if d.label ~= "" then PlaceLabel(4, ry, lblW1, d.label) end
-              local x = d.x or (4 + lblW1 + 12)
-              PlaceCtl(d, x, ry, d.w or (GRP_W - (4 + lblW1 + 12) - 8))
+              local c = (g.cols and g.cols[1]) or
+                        {lblX = 4, lblW = lblW1, ctlX = 4 + lblW1 + 12,
+                         ctlW = GRP_W - (4 + lblW1 + 12) - 8}
+              if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
+              PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
             else
               -- A group may override the default column geometry.
               local c = (g.cols or COL)[d.col]

@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.4.0",
-  BuildVersion = "1.5.4.0",
+  Version = "1.5.5.0",
+  BuildVersion = "1.5.5.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -145,14 +145,16 @@ CamCtls = {
 
   {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 1,
    name = "video.format.imaging.frame.rate", pretty = "Video Format~Imaging Frame Rate", label = "Imaging Frame Rate (Hz)", kind = "enum"},
-  {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 2,
+  {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 2, w = 40,
    name = "setup.hdmi.enable", pretty = "Video Format~SDI/HDMI Enable", label = "SDI/HDMI Enable", kind = "bool"},
-  {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 3,
-   name = "setup.hdmi.mode", pretty = "Video Format~SDI/HDMI Mode", label = "SDI/HDMI Mode", kind = "bool"},
+  {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 3, w = 40,
+   name = "setup.hdmi.mode", pretty = "Video Format~SDI/HDMI Mode", label = "SDI/HDMI Mode", kind = "bool",
+   legendOn = "SDI", legendOff = "HDMI"},
   {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 4,
    name = "setup.hdmi.output.format", pretty = "Video Format~SDI/HDMI Format", label = "SDI/HDMI Format", kind = "enum"},
-  {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 5,
-   name = "setup.sdi.level", pretty = "Video Format~SDI Level A/B", label = "SDI Level A/B", kind = "bool"},
+  {page = "Imaging", group = "SDI/HDMI Format", col = 1, row = 5, w = 40,
+   name = "setup.sdi.level", pretty = "Video Format~SDI Level A/B", label = "SDI Level A/B", kind = "bool",
+   legendOn = "A", legendOff = "B"},
 
   -- ===== Auto Framing page =====
   {page = "Auto Framing", group = "Auto Framing", col = 1, row = 1,
@@ -241,7 +243,8 @@ CamGroups = {
   {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2", y = 374, h = 40,
    cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 96},
            {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}}},
-  {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432},
+  {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432,
+   cols = {{lblX = 4, lblW = 150, ctlX = 158, ctlW = 150}}},
   {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
   {page = "Mediacast Streams",   name = "IP Streams",      rows = 7, style = "pairs",
    headers = {"Preview Stream", "Mediacast Stream"}},
@@ -938,9 +941,11 @@ function GetControlLayout(props)
             Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true,
             StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
         elseif d.kind == "bool" then
-          layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
+          -- legendOff is the starting caption; the runtime swaps it with the state.
+          layout[d.name] = {PrettyName = d.pretty, Legend = d.legendOff or "",
+            FontSize = fsM, Style = "Button",
             Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
-            Margin = 2, Position = {x, y}, Size = {32, ctlH}}
+            Margin = 2, Position = {x, y}, Size = {d.w or 32, ctlH}}
         elseif d.kind == "statetrig" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
             Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true,
@@ -998,9 +1003,11 @@ function GetControlLayout(props)
                 local x = d.x and (d.x) or PairX(d.col)
                 PlaceCtl(d, x, ry, d.w or pColW)
               elseif g.style == "cols1" then
-                if d.label ~= "" then PlaceLabel(4, ry, lblW1, d.label) end
-                local x = d.x or (4 + lblW1 + 12)
-                PlaceCtl(d, x, ry, d.w or (GRP_W - (4 + lblW1 + 12) - 8))
+                local c = (g.cols and g.cols[1]) or
+                          {lblX = 4, lblW = lblW1, ctlX = 4 + lblW1 + 12,
+                           ctlW = GRP_W - (4 + lblW1 + 12) - 8}
+                if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
+                PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
               else
                 -- A group may override the default column geometry.
                 local c = (g.cols or COL)[d.col]
@@ -1162,6 +1169,11 @@ if Controls then
         elseif d.kind == "bool" then
           local v; pcall(function() v = cam[d.name].Boolean end)
           if v ~= nil and ctl.Boolean ~= v then ctl.Boolean = v end
+          -- Some toggles caption themselves with their state (SDI/HDMI, A/B).
+          if v ~= nil and d.legendOn ~= nil then
+            local want = v and d.legendOn or d.legendOff
+            if ctl.Legend ~= want then ctl.Legend = want end
+          end
         elseif d.kind == "enum" then
           local ch, s
           pcall(function() ch = cam[d.name].Choices end)
