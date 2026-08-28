@@ -117,8 +117,9 @@ CamCtls = {
    name = "autoframe.transition.speed", pretty = "Auto Framing~Transition Speed", label = "Transition Speed", kind = "enum"},
   {page = "Auto Framing", group = "Auto Framing", col = 1, row = 5,
    name = "autoframe.face.count", pretty = "Auto Framing~Face Count Enable", label = "Face Count", kind = "bool"},
-  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 5, x = 316, w = 105,
-   name = "autoframe.facecount.display", pretty = "Auto Framing~Face Count", label = "", kind = "ro"},
+  {page = "Auto Framing", group = "Auto Framing", col = 1, row = 5, x = 167, w = 128,
+   name = "autoframe.facecount.display", fill = Palette.ro_grey,
+   pretty = "Auto Framing~Face Count", label = "", kind = "ro"},
   {page = "Auto Framing", group = "Auto Framing", col = 1, row = 6,
    name = "autoframe.outline.face", pretty = "Auto Framing~Outline Faces Enable", label = "Outline Faces", kind = "bool"},
 
@@ -196,7 +197,9 @@ CamGroups = {
            {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}}},
   {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432,
    cols = {{lblX = 4, lblW = 150, ctlX = 158, ctlW = 150}}},
-  {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
+  {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1",
+   y = 0, h = 135, w = 435,
+   cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 192}}},
   {page = "Mediacast Streams", name = "IP Streams", rows = 7, style = "pairs",
    y = 0, h = 154, w = 436, lblW = 100,
    -- The Preview heading is narrower than its column, because the Enable
