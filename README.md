@@ -206,3 +206,7 @@ inputs (slot *i* = input *i*).
 | 1.1.2.0 | Grey-out mirrored from the camera's own `IsDisabled` |
 | 1.2.0.0 | Control registry introduced; full Imaging page |
 | 1.3.0.0 | Pan/Tilt/Zoom, Auto Framing, IP Streams and Status pages |
+| 1.4.x | Native tab names and order; Control page measured against the native block; group boxes transparent with a 1px black stroke; label text 11pt `#ff333333` |
+| 1.5.x | Imaging, Mediacast Streams, Auto Framing and Status measured; meters `#ff7c9bcf`, buttons `#ff69c08a`, read-only readouts white or `#ffc2c2c2`; state-captioned toggles |
+| 1.6.x | Preview group: a Media-style field fed the camera's preview string, with a 10-button overlay pad |
+| 2.0.0.0 | First release of the 1:1 rebuild |
