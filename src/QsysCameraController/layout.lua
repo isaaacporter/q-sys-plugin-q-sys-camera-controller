@@ -316,19 +316,20 @@
     -- rendered entirely from the registry.
     -- Group boxes and rows are rendered from the CamCtls registry, so the page
     -- is defined by data rather than by positions repeated per control.
-    local rowStep = 26
-    local ctlH    = 22
-    local colGap  = 8
-    local colW    = math.floor((PLUGIN_W - 16 - colGap) / 2)
-    local lblW2   = 100   -- label width in a two-column group
-    local lblW1   = 240   -- label width in a single-column group
-
-    local function ColX(c) return 8 + (c - 1) * (colW + colGap) end
+    local GRP_W   = 433   -- group boxes on these pages are 433 wide
+    local rowStep = 19
+    local ctlH    = 16
+    -- Two-column grid: label then a 128-wide control in each half.
+    local COL = {
+      {lblX = 4,   lblW = 64, ctlX = 71,  ctlW = 128},
+      {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}
+    }
+    local lblW1 = 240     -- label width in a single-column group
 
     local function PlaceLabel(x, y, w, text)
       table.insert(graphics, {
         Type = "Text", Text = text, FontSize = fs1, HTextAlign = "Right",
-        Color = Palette.text, Position = {x, y + 2}, Size = {w, h1}
+        Color = Palette.text, Position = {x, y}, Size = {w, 16}
       })
     end
 
@@ -374,30 +375,31 @@
       end
     end
 
-    -- Page-level trigger sits above the first group, as on the native block.
-    local y = 8
+    -- Page-level trigger sits above the first group, as on the native block:
+    -- a 400-wide label on row 0 with a 32x16 button at x=403.
+    local y = 0
     for _, t in ipairs(CamPageTriggers) do
       if t.page == CurrentPage then
-        PlaceLabel(8, y, PLUGIN_W - 8 - 48 - 12, t.label)
+        PlaceLabel(0, y, 400, t.label)
         layout[t.name] = {PrettyName = t.pretty, Legend = "", Style = "Button",
           Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
-          Margin = 3, Position = {PLUGIN_W - 48, y}, Size = {36, ctlH}}
-        y = y + rowStep + 4
+          Margin = 2, Position = {403, y}, Size = {32, 16}}
+        y = y + 16
       end
     end
 
     -- Paired-column geometry, used by the IP Streams table.
     local pLblW = 140
     local pColW = 138
-    local function PairX(c) return 8 + pLblW + 4 + (c - 1) * (pColW + 4) end
+    local function PairX(c) return 4 + pLblW + 4 + (c - 1) * (pColW + 4) end
 
     for _, g in ipairs(CamGroups) do
       if g.page == CurrentPage then
-        local gh = 26 + g.rows * rowStep + 8
+        local gh = 11 + g.rows * rowStep
         table.insert(graphics, {
           Type = "GroupBox", Text = g.name, FontSize = fs1, HTextAlign = "Left",
           Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
-          CornerRadius = 8, Position = {0, y}, Size = {PLUGIN_W, gh}
+          CornerRadius = 8, Position = {0, y}, Size = {GRP_W, gh}
         })
         -- Column headings above a paired table.
         if g.headers then
@@ -405,25 +407,25 @@
             table.insert(graphics, {
               Type = "Text", Text = text, FontSize = fs1, FontStyle = "Bold",
               HTextAlign = "Center", Color = Palette.text,
-              Position = {PairX(c), y + 26}, Size = {pColW, h1}
+              Position = {PairX(c), y + 20}, Size = {pColW, 16}
             })
           end
         end
         for _, d in ipairs(CamCtls) do
           if d.page == CurrentPage and d.group == g.name then
-            local ry = y + 26 + (d.row - 1) * rowStep
+            local ry = y + 20 + (d.row - 1) * rowStep
             if g.style == "pairs" then
-              if d.rowlabel then PlaceLabel(8, ry, pLblW, d.rowlabel) end
+              if d.rowlabel then PlaceLabel(4, ry, pLblW, d.rowlabel) end
               local x = d.x and (d.x) or PairX(d.col)
               PlaceCtl(d, x, ry, d.w or pColW)
             elseif g.style == "cols1" then
-              if d.label ~= "" then PlaceLabel(8, ry, lblW1, d.label) end
-              local x = d.x or (8 + lblW1 + 12)
-              PlaceCtl(d, x, ry, d.w or (PLUGIN_W - (8 + lblW1 + 12) - 12))
+              if d.label ~= "" then PlaceLabel(4, ry, lblW1, d.label) end
+              local x = d.x or (4 + lblW1 + 12)
+              PlaceCtl(d, x, ry, d.w or (GRP_W - (4 + lblW1 + 12) - 8))
             else
-              local x = ColX(d.col)
-              if d.label ~= "" then PlaceLabel(x, ry, lblW2, d.label) end
-              PlaceCtl(d, d.x or (x + lblW2 + 4), ry, d.w or (colW - lblW2 - 4))
+              local c = COL[d.col]
+              if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
+              PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
             end
           end
         end
