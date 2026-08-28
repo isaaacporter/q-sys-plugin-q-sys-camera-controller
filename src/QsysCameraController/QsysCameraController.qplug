@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.3.0",
-  BuildVersion = "1.5.3.0",
+  Version = "1.5.4.0",
+  BuildVersion = "1.5.4.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -34,7 +34,8 @@ Palette = {
   Red       = {200, 40, 40},
   Green     = {40, 180, 80},
   ptz_off   = {124, 124, 124},  -- #7C7C7C
-  green_on  = {0, 159, 60},     -- #009F3C
+  btn_green = {105, 192, 138},  -- #ff69c08a  fill for a green button
+  green_on  = {0, 159, 60},     -- #009F3C    fill for an indicator LED
   green_off = {0, 75, 22},      -- #004B16
   gray_off  = {137, 137, 137},  -- #898989
   text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
@@ -234,8 +235,12 @@ CamGroups = {
   {page = "Imaging",      name = "Exposure",        rows = 6, style = "cols2", y = 91,  h = 135,
    cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 96},
            {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}}},
-  {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2", y = 242, h = 116},
-  {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2", y = 374, h = 40},
+  {page = "Imaging",      name = "White Balance",   rows = 5, style = "cols2", y = 242, h = 116,
+   cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 96},
+           {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}}},
+  {page = "Imaging",      name = "Noise Reduction", rows = 1, style = "cols2", y = 374, h = 40,
+   cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 96},
+           {lblX = 202, lblW = 96, ctlX = 301, ctlW = 128}}},
   {page = "Imaging",      name = "SDI/HDMI Format", rows = 5, style = "cols1", y = 430, h = 116, w = 432},
   {page = "Auto Framing", name = "Auto Framing",    rows = 6, style = "cols1"},
   {page = "Mediacast Streams",   name = "IP Streams",      rows = 7, style = "pairs",
@@ -739,9 +744,9 @@ function GetControlLayout(props)
       table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, homeY + 8}, Size = {hpLblW, 16}})
       table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, privY + 8}, Size = {hpLblW, 16}})
   
-      layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, homeY}, Size = {hpIcon, 32}}
+      layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, homeY}, Size = {hpIcon, 32}}
       layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, homeY}, Size = {hpSaveW, 32}}
-      layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, privY}, Size = {hpIcon, 32}}
+      layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, privY}, Size = {hpIcon, 32}}
       layout["privacy_save"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, privY}, Size = {hpSaveW, 32}}
   
       -- Coordinates readout (current ptz.preset position), on its own row above
@@ -758,7 +763,7 @@ function GetControlLayout(props)
       end
       local function PtzBool(name, pretty, y, x)
         layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
-          Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+          Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {32, 16}}
       end
       local function PtzMeter(name, pretty, y, x, w)
@@ -785,7 +790,7 @@ function GetControlLayout(props)
       r = r + ptzRowH
       PtzLabel(lblX, r, lblW, "Recalibrate PTZ")
       layout["ptz.recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
-        Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+        Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
         Margin = 2, Position = {ctlX, r}, Size = {32, 16}}
       r = r + ptzRowH
       PtzLabel(lblX, r, lblW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, ctlX)
@@ -934,11 +939,15 @@ function GetControlLayout(props)
             StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
         elseif d.kind == "bool" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
-            Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+            Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
             Margin = 2, Position = {x, y}, Size = {32, ctlH}}
-        elseif d.kind == "trigger" or d.kind == "statetrig" then
+        elseif d.kind == "statetrig" then
           layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
-            Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+            Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true,
+            Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
+        elseif d.kind == "trigger" then
+          layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
+            Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
             Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
         end
       end
@@ -950,7 +959,7 @@ function GetControlLayout(props)
         if t.page == CurrentPage then
           PlaceLabel(0, y, 400, t.label)
           layout[t.name] = {PrettyName = t.pretty, Legend = "", Style = "Button",
-            Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+            Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
             Margin = 2, Position = {403, y}, Size = {32, 16}}
           y = y + 16
         end

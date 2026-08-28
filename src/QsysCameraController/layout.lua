@@ -171,9 +171,9 @@
     table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, homeY + 8}, Size = {hpLblW, 16}})
     table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, privY + 8}, Size = {hpLblW, 16}})
 
-    layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, homeY}, Size = {hpIcon, 32}}
+    layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, homeY}, Size = {hpIcon, 32}}
     layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, homeY}, Size = {hpSaveW, 32}}
-    layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, privY}, Size = {hpIcon, 32}}
+    layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, privY}, Size = {hpIcon, 32}}
     layout["privacy_save"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, privY}, Size = {hpSaveW, 32}}
 
     -- Coordinates readout (current ptz.preset position), on its own row above
@@ -190,7 +190,7 @@
     end
     local function PtzBool(name, pretty, y, x)
       layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
-        Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+        Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
         Margin = 2, Position = {x, y}, Size = {32, 16}}
     end
     local function PtzMeter(name, pretty, y, x, w)
@@ -217,7 +217,7 @@
     r = r + ptzRowH
     PtzLabel(lblX, r, lblW, "Recalibrate PTZ")
     layout["ptz.recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
-      Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+      Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
       Margin = 2, Position = {ctlX, r}, Size = {32, 16}}
     r = r + ptzRowH
     PtzLabel(lblX, r, lblW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, ctlX)
@@ -366,11 +366,15 @@
           StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
       elseif d.kind == "bool" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
-          Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+          Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {32, ctlH}}
-      elseif d.kind == "trigger" or d.kind == "statetrig" then
+      elseif d.kind == "statetrig" then
         layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
-          Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+          Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true,
+          Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
+      elseif d.kind == "trigger" then
+        layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
+          Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
       end
     end
@@ -382,7 +386,7 @@
       if t.page == CurrentPage then
         PlaceLabel(0, y, 400, t.label)
         layout[t.name] = {PrettyName = t.pretty, Legend = "", Style = "Button",
-          Color = Palette.green_on, OffColor = Palette.gray_off, UnlinkOffColor = true,
+          Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
           Margin = 2, Position = {403, y}, Size = {32, 16}}
         y = y + 16
       end
