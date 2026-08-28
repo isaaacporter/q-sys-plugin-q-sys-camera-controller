@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.11.0",
-  BuildVersion = "1.5.11.0",
+  Version = "1.5.12.0",
+  BuildVersion = "1.5.12.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -206,7 +206,7 @@ CamCtls = {
    name = "streaming.network", pretty = "Status~IP Streaming", label = "IP Streaming", kind = "led"},
   {page = "Status", group = "Status", col = 1, row = 1, x = 380, w = 40,
    name = "identify.state.trigger", pretty = "Status~Identify", label = "", kind = "statetrig"},
-  {page = "Status", group = "Status", col = 1, row = 2, x = 8, w = 18,
+  {page = "Status", group = "Status", col = 1, row = 2, x = 4, w = 16,
    name = "camera.status.led", pretty = "Status~Status Indicator", label = "", kind = "led"},
   {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387,
    name = "camera.status", fill = Palette.ro_grey, pretty = "Status~Status Bar", label = "", kind = "status"},
@@ -954,8 +954,8 @@ function GetControlLayout(props)
             Position = {x, y}, Size = {w, ctlH}}
         elseif d.kind == "led" then
           layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
-            Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true,
-            StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
+            Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+            StrokeWidth = 1, Margin = 3, Position = {x, y}, Size = {16, 16}}
         elseif d.kind == "bool" then
           -- legendOff is the starting caption; the runtime swaps it with the state.
           layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",

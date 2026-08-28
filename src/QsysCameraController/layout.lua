@@ -364,8 +364,8 @@
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "led" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
-          Color = Palette.Green, OffColor = {16, 40, 24}, UnlinkOffColor = true,
-          StrokeWidth = 1, Margin = 2, Position = {x, y + 2}, Size = {18, 18}}
+          Color = Palette.green_on, OffColor = Palette.green_off, UnlinkOffColor = true,
+          StrokeWidth = 1, Margin = 3, Position = {x, y}, Size = {16, 16}}
       elseif d.kind == "bool" then
         -- legendOff is the starting caption; the runtime swaps it with the state.
         layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",

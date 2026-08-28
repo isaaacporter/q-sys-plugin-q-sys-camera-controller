@@ -155,7 +155,7 @@ CamCtls = {
    name = "streaming.network", pretty = "Status~IP Streaming", label = "IP Streaming", kind = "led"},
   {page = "Status", group = "Status", col = 1, row = 1, x = 380, w = 40,
    name = "identify.state.trigger", pretty = "Status~Identify", label = "", kind = "statetrig"},
-  {page = "Status", group = "Status", col = 1, row = 2, x = 8, w = 18,
+  {page = "Status", group = "Status", col = 1, row = 2, x = 4, w = 16,
    name = "camera.status.led", pretty = "Status~Status Indicator", label = "", kind = "led"},
   {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387,
    name = "camera.status", fill = Palette.ro_grey, pretty = "Status~Status Bar", label = "", kind = "status"},
