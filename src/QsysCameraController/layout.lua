@@ -324,9 +324,13 @@
       Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {ptzGX, previewTop}, Size = {PLUGIN_W, previewGH}
     })
+    local previewW, previewH = 320, 180
     layout["preview"] = {
-      PrettyName = "Preview", Style = "Text", PresentationType = "MediaDisplay",
-      Position = {ptzGX + 8, previewTop + 20}, Size = {PLUGIN_W - 16, previewGH - 28}
+      PrettyName = "Preview", Style = "Text", PresentationType = "Media Display",
+      Color = Palette.ro_grey, OffColor = Palette.ro_grey, UnlinkOffColor = true,
+      -- Centred: a 320-wide field cannot start at x=180 inside a 435 group.
+      Position = {ptzGX + math.floor((PLUGIN_W - previewW) / 2), previewTop + 20},
+      Size = {previewW, previewH}
     }
 
   else
