@@ -270,11 +270,11 @@
     PtzMeter("setup.focus.speed", "Focus~Manual Speed", 276, foX, foW)
     FocusLabel(295, "AF Sensitivity")
     layout["setup.focus.sensitivity"] = {PrettyName = "Focus~AF Sensitivity", Style = "ComboBox",
-      FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
+      FontSize = fsM, HTextAlign = "Center", Color = Palette.White, Padding = 2,
       StrokeWidth = 1, Position = {foX, 295}, Size = {foW, 16}}
     FocusLabel(314, "AF Zone")
     layout["setup.focus.zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
-      FontSize = fs1, HTextAlign = "Center", Color = Palette.White, Padding = 2,
+      FontSize = fsM, HTextAlign = "Center", Color = Palette.White, Padding = 2,
       StrokeWidth = 1, Position = {foX, 314}, Size = {foW, 16}}
 
     -- Presets group (right column, under the PTZ block; single row of presets)
