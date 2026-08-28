@@ -326,10 +326,10 @@
     }
     local lblW1 = 240     -- label width in a single-column group
 
-    local function PlaceLabel(x, y, w, text)
+    local function PlaceLabel(x, y, w, text, h)
       table.insert(graphics, {
         Type = "Text", Text = text, FontSize = fs1, HTextAlign = "Right",
-        Color = Palette.text, Position = {x, y}, Size = {w, 16}
+        Color = Palette.text, Position = {x, y}, Size = {w, h or 16}
       })
     end
 
@@ -361,10 +361,10 @@
         layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
           HTextAlign = "Center", Color = d.fill or Palette.White,
           TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
-          Position = {x, y}, Size = {w, ctlH}}
+          Position = {x, y}, Size = {w, d.h or ctlH}}
       elseif d.kind == "led" then
         layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
-          Color = d.fill or Palette.green_on, OffColor = Palette.green_off,
+          Color = d.fill or Palette.green_on, OffColor = d.offFill or Palette.green_off,
           UnlinkOffColor = true, StrokeWidth = 1, Margin = 3,
           Position = {x, y}, Size = {16, 16}}
       elseif d.kind == "bool" then
@@ -439,12 +439,12 @@
               local c = (g.cols and g.cols[1]) or
                         {lblX = 4, lblW = lblW1, ctlX = 4 + lblW1 + 12,
                          ctlW = GRP_W - (4 + lblW1 + 12) - 8}
-              if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
+              if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label, d.lblH) end
               PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
             else
               -- A group may override the default column geometry.
               local c = (g.cols or COL)[d.col]
-              if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
+              if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label, d.lblH) end
               PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
             end
           end

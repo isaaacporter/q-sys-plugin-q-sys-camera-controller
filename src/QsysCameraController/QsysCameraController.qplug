@@ -2,8 +2,8 @@
 PluginInfo = {
   Name = "Cameras~Q-SYS Camera Controller",
   Description = "Select and PTZ-control any PTZ-capable camera component in the design from one shared control set.",
-  Version = "1.5.13.0",
-  BuildVersion = "1.5.13.0",
+  Version = "1.5.14.0",
+  BuildVersion = "1.5.14.0",
   Id = "4178aa21-737e-40f8-a8d0-84d09d004d1d",
   Author = "CTI, Isaac Porter",
 }
@@ -40,9 +40,11 @@ Palette = {
   gray_off  = {137, 137, 137},  -- #898989
   text      = {51, 51, 51},     -- #ff333333  all label text on the native pages
   ro_grey   = {194, 194, 194},  -- #ffc2c2c2  fill for a greyed read-only readout
-  led_green = {0, 255, 0},      -- #ff00ff00  IP Streaming
-  led_red   = {255, 0, 0},      -- #ffff0000  Status
-  id_yellow = {248, 244, 0},    -- #fff8f400  Identify button
+  led_green     = {0, 255, 0},    -- #ff00ff00  IP Streaming
+  led_green_off = {0, 124, 0},    -- #ff007c00
+  led_red       = {255, 0, 0},    -- #ffff0000  Status
+  id_yellow     = {248, 244, 0},  -- #fff8f400  Identify button
+  id_yellow_off = {120, 118, 0},  -- #ff787600
   meter_on  = {124, 155, 207},  -- #ff7c9bcf  filled portion of every value meter
   meter_off = {26, 32, 48}      -- #1A2030  unfilled portion
 }
@@ -205,16 +207,16 @@ CamCtls = {
    name = "peak.frame.bitrate", pretty = "IP Stream~Mediacast Stream Peak Frame Bitrate", label = "", kind = "int", min = 30, max = 120},
 
   -- ===== Status page =====
-  {page = "Status", group = "Status", col = 1, row = 1, x = 103, dy = 4,
-   name = "streaming.network", fill = Palette.led_green,
+  {page = "Status", group = "Status", col = 1, row = 1, x = 103, dy = 4, lblH = 24,
+   name = "streaming.network", fill = Palette.led_green, offFill = Palette.led_green_off,
    pretty = "Status~IP Streaming", label = "IP Streaming", kind = "led"},
   {page = "Status", group = "Status", col = 1, row = 1, x = 389, w = 36, h = 24,
-   name = "identify.state.trigger", fill = Palette.id_yellow, legend = "ID",
-   pretty = "Status~Identify", label = "", kind = "statetrig"},
+   name = "identify.state.trigger", fill = Palette.id_yellow, offFill = Palette.id_yellow_off,
+   legend = "ID", pretty = "Status~Identify", label = "", kind = "statetrig"},
   {page = "Status", group = "Status", col = 1, row = 2, x = 4, w = 16, dy = 16,
    name = "camera.status.led", fill = Palette.led_red,
    pretty = "Status~Status Indicator", label = "", kind = "led"},
-  {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387, dy = 16,
+  {page = "Status", group = "Status", col = 1, row = 2, x = 23, w = 400, h = 32, dy = 8,
    name = "camera.status", fill = Palette.ro_grey, pretty = "Status~Status Bar", label = "", kind = "status"},
 
   {page = "Status", group = "Network", col = 1, row = 1,
@@ -263,9 +265,9 @@ CamGroups = {
    -- button shares the heading row with it.
    cols = {{ctlX = 107, ctlW = 160, hdrW = 120}, {ctlX = 272, ctlW = 160}},
    headers = {"Preview Stream", "Mediacast Stream"}},
-  {page = "Status",       name = "Status",           rows = 2, style = "cols1", y = 0,   h = 83, w = 435},
+  {page = "Status",       name = "Status",           rows = 2, style = "cols1", y = 0,   h = 83, w = 435, cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 192}}},
   {page = "Status",       name = "Network",          rows = 3, style = "cols1", y = 99,  h = 81, w = 435},
-  {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1", y = 180, h = 78, w = 435}
+  {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1", y = 180, h = 78, w = 435, cols = {{lblX = 4, lblW = 112, ctlX = 119, ctlW = 304}}}
 }
 
 -- Page-level trigger buttons that sit above the first group box.
@@ -922,10 +924,10 @@ function GetControlLayout(props)
       }
       local lblW1 = 240     -- label width in a single-column group
   
-      local function PlaceLabel(x, y, w, text)
+      local function PlaceLabel(x, y, w, text, h)
         table.insert(graphics, {
           Type = "Text", Text = text, FontSize = fs1, HTextAlign = "Right",
-          Color = Palette.text, Position = {x, y}, Size = {w, 16}
+          Color = Palette.text, Position = {x, y}, Size = {w, h or 16}
         })
       end
   
@@ -957,10 +959,10 @@ function GetControlLayout(props)
           layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
             HTextAlign = "Center", Color = d.fill or Palette.White,
             TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
-            Position = {x, y}, Size = {w, ctlH}}
+            Position = {x, y}, Size = {w, d.h or ctlH}}
         elseif d.kind == "led" then
           layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
-            Color = d.fill or Palette.green_on, OffColor = Palette.green_off,
+            Color = d.fill or Palette.green_on, OffColor = d.offFill or Palette.green_off,
             UnlinkOffColor = true, StrokeWidth = 1, Margin = 3,
             Position = {x, y}, Size = {16, 16}}
         elseif d.kind == "bool" then
@@ -1035,12 +1037,12 @@ function GetControlLayout(props)
                 local c = (g.cols and g.cols[1]) or
                           {lblX = 4, lblW = lblW1, ctlX = 4 + lblW1 + 12,
                            ctlW = GRP_W - (4 + lblW1 + 12) - 8}
-                if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
+                if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label, d.lblH) end
                 PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
               else
                 -- A group may override the default column geometry.
                 local c = (g.cols or COL)[d.col]
-                if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label) end
+                if d.label ~= "" then PlaceLabel(c.lblX, ry, c.lblW, d.label, d.lblH) end
                 PlaceCtl(d, d.x or c.ctlX, ry, d.w or c.ctlW)
               end
             end

@@ -151,16 +151,16 @@ CamCtls = {
    name = "peak.frame.bitrate", pretty = "IP Stream~Mediacast Stream Peak Frame Bitrate", label = "", kind = "int", min = 30, max = 120},
 
   -- ===== Status page =====
-  {page = "Status", group = "Status", col = 1, row = 1, x = 103, dy = 4,
-   name = "streaming.network", fill = Palette.led_green,
+  {page = "Status", group = "Status", col = 1, row = 1, x = 103, dy = 4, lblH = 24,
+   name = "streaming.network", fill = Palette.led_green, offFill = Palette.led_green_off,
    pretty = "Status~IP Streaming", label = "IP Streaming", kind = "led"},
   {page = "Status", group = "Status", col = 1, row = 1, x = 389, w = 36, h = 24,
-   name = "identify.state.trigger", fill = Palette.id_yellow, legend = "ID",
-   pretty = "Status~Identify", label = "", kind = "statetrig"},
+   name = "identify.state.trigger", fill = Palette.id_yellow, offFill = Palette.id_yellow_off,
+   legend = "ID", pretty = "Status~Identify", label = "", kind = "statetrig"},
   {page = "Status", group = "Status", col = 1, row = 2, x = 4, w = 16, dy = 16,
    name = "camera.status.led", fill = Palette.led_red,
    pretty = "Status~Status Indicator", label = "", kind = "led"},
-  {page = "Status", group = "Status", col = 1, row = 2, x = 34, w = 387, dy = 16,
+  {page = "Status", group = "Status", col = 1, row = 2, x = 23, w = 400, h = 32, dy = 8,
    name = "camera.status", fill = Palette.ro_grey, pretty = "Status~Status Bar", label = "", kind = "status"},
 
   {page = "Status", group = "Network", col = 1, row = 1,
@@ -209,9 +209,9 @@ CamGroups = {
    -- button shares the heading row with it.
    cols = {{ctlX = 107, ctlW = 160, hdrW = 120}, {ctlX = 272, ctlW = 160}},
    headers = {"Preview Stream", "Mediacast Stream"}},
-  {page = "Status",       name = "Status",           rows = 2, style = "cols1", y = 0,   h = 83, w = 435},
+  {page = "Status",       name = "Status",           rows = 2, style = "cols1", y = 0,   h = 83, w = 435, cols = {{lblX = 4, lblW = 96, ctlX = 103, ctlW = 192}}},
   {page = "Status",       name = "Network",          rows = 3, style = "cols1", y = 99,  h = 81, w = 435},
-  {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1", y = 180, h = 78, w = 435}
+  {page = "Status",       name = "Hardware Details", rows = 3, style = "cols1", y = 180, h = 78, w = 435, cols = {{lblX = 4, lblW = 112, ctlX = 119, ctlW = 304}}}
 }
 
 -- Page-level trigger buttons that sit above the first group box.
