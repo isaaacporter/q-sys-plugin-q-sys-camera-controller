@@ -43,7 +43,7 @@ CamCtls = {
   {page = "Control", name = "setup.focus.zone", pretty = "Focus~AF Zone", label = "AF Zone", kind = "enum"},
   -- The camera hands its preview stream over as a string on this control; our
   -- text field renders it because the layout presents it as a MediaDisplay.
-  {page = "Control", name = "preview", pretty = "Preview", label = "Preview", kind = "media"},
+  {page = "Control", name = "preview", pin = false, pretty = "Preview", label = "Preview", kind = "media"},
 
   -- ===== Imaging page =====
   {page = "Imaging", group = "Imaging", col = 1, row = 1,
@@ -128,30 +128,30 @@ CamCtls = {
 
   -- ===== IP Streams page (paired Preview / Mediacast columns) =====
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 1, x = 227, w = 40,
-   name = "ip.streams.preview.enable", pretty = "IP Stream~Preview Stream Enable", label = "", kind = "bool",
+   name = "ip.streams.preview.enable", pretty = "IP Stream~Preview Stream~Enable", label = "", kind = "bool",
    legend = "Enable"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 2, rowlabel = "RTSP URL",
-   name = "ip.streams.preview.rtsp.url", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream RTSP URL", label = "", kind = "ro"},
+   name = "ip.streams.preview.rtsp.url", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream~RTSP URL", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 3, rowlabel = "RTP Address",
-   name = "ip.streams.preview.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream RTP Address", label = "", kind = "ro"},
+   name = "ip.streams.preview.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream~RTP Address", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 3,
-   name = "ip.streams.lbr.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Mediacast Stream RTP Address", label = "", kind = "ro"},
+   name = "ip.streams.lbr.rtp.address", fill = Palette.ro_grey, pretty = "IP Stream~Mediacast Stream~RTP Address", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, rowlabel = "Streaming Mode", w = 106,
-   name = "ip.streams.preview.streaming.mode", pretty = "IP Stream~Preview Stream Streaming Mode", label = "", kind = "enum"},
+   name = "ip.streams.preview.streaming.mode", pretty = "IP Stream~Preview Stream~Streaming Mode", label = "", kind = "enum"},
   -- No discoverable range for the frame rate, so it stays an editable text
   -- field rather than a meter that would render an invented fill.
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 4, x = 215, w = 26,
-   name = "ip.streams.preview.streaming.mode.fps", pretty = "IP Stream~Preview Stream Frame Rate", label = "", kind = "text"},
+   name = "ip.streams.preview.streaming.mode.fps", pretty = "IP Stream~Preview Stream~Frame Rate", label = "", kind = "text"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 5, rowlabel = "Video Format",
-   name = "ip.streams.preview.video.format", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream Video Format", label = "", kind = "ro"},
+   name = "ip.streams.preview.video.format", fill = Palette.ro_grey, pretty = "IP Stream~Preview Stream~Video Format", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 5,
-   name = "ip.streams.lbr.video.format", fill = Palette.ro_grey, pretty = "IP Stream~Mediacast Stream Video Format", label = "", kind = "ro"},
+   name = "ip.streams.lbr.video.format", fill = Palette.ro_grey, pretty = "IP Stream~Mediacast Stream~Video Format", label = "", kind = "ro"},
   {page = "Mediacast Streams", group = "IP Streams", col = 1, row = 6, rowlabel = "Max Bitrate (Mbps)",
-   name = "ip.streams.preview.max.bitrate", pretty = "IP Stream~Preview Stream Max Bitrate", label = "", kind = "float", min = 0.5, max = 2.0},
+   name = "ip.streams.preview.max.bitrate", pretty = "IP Stream~Preview Stream~Max Bitrate", label = "", kind = "float", min = 0.5, max = 2.0},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 6,
-   name = "ip.streams.lbr.max.bitrate", pretty = "IP Stream~Mediacast Stream Max Bitrate", label = "", kind = "float", min = 1.0, max = 25.0},
+   name = "ip.streams.lbr.max.bitrate", pretty = "IP Stream~Mediacast Stream~Max Bitrate", label = "", kind = "float", min = 1.0, max = 25.0},
   {page = "Mediacast Streams", group = "IP Streams", col = 2, row = 7, rowlabel = "Peak Frame Bitrate",
-   name = "peak.frame.bitrate", pretty = "IP Stream~Mediacast Stream Peak Frame Bitrate", label = "", kind = "int", min = 30, max = 120},
+   name = "peak.frame.bitrate", pretty = "IP Stream~Mediacast Stream~Peak Frame Bitrate", label = "", kind = "int", min = 30, max = 120},
 
   -- ===== Status page =====
   {page = "Status", group = "Status", col = 1, row = 1, x = 103, dy = 4, lblH = 24,

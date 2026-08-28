@@ -320,15 +320,48 @@
     local previewTop = pageBottom + 12
     local previewGH  = 204
     table.insert(graphics, {
-      Type = "GroupBox", Text = "Camera Preview", FontSize = fs1, HTextAlign = "Left",
+      Type = "GroupBox", Text = "Preview", FontSize = fs1, HTextAlign = "Left",
       Color = Palette.text, StrokeColor = Palette.Black, StrokeWidth = 1,
       CornerRadius = 8, Position = {ptzGX, previewTop}, Size = {PLUGIN_W, previewGH}
     })
+    local pvX, pvY, pvW, pvH = 103, previewTop + 20, 320, 180
     layout["preview"] = {
       PrettyName = "Preview", Style = "Media",
       Color = Palette.ro_grey, OffColor = Palette.ro_grey, UnlinkOffColor = true,
-      Position = {103, previewTop + 20}, Size = {320, 180}
+      Position = {pvX, pvY}, Size = {pvW, pvH}
     }
+
+    -- Overlay pad: white icons on a transparent field, spaced evenly around the
+    -- edges of the media box.
+    local pvB    = 32
+    local pvL    = pvX
+    local pvR    = pvX + pvW - pvB
+    local pvT    = pvY
+    local pvBot  = pvY + pvH - pvB
+    local pvMidX = pvX + math.floor((pvW - pvB) / 2)
+    local pvMidY = pvY + math.floor((pvH - pvB) / 2)
+    local pvStep = math.floor((pvR - pvL) / 4)
+
+    local pvPad = {
+      {"pan.left.tilt.up",    "Pan Left / Tilt Up",    pvL,           pvT},
+      {"zoom.out",            "Zoom Out",              pvL + pvStep,  pvT},
+      {"tilt.up",             "Tilt Up",               pvMidX,        pvT},
+      {"zoom.in",             "Zoom In",               pvR - pvStep,  pvT},
+      {"pan.right.tilt.up",   "Pan Right / Tilt Up",   pvR,           pvT},
+      {"pan.left",            "Pan Left",              pvL,           pvMidY},
+      {"pan.right",           "Pan Right",             pvR,           pvMidY},
+      {"pan.left.tilt.down",  "Pan Left / Tilt Down",  pvL,           pvBot},
+      {"tilt.down",           "Tilt Down",             pvMidX,        pvBot},
+      {"pan.right.tilt.down", "Pan Right / Tilt Down", pvR,           pvBot}
+    }
+    for _, b in ipairs(pvPad) do
+      layout[b[1]] = {
+        PrettyName = b[2], Legend = "", Style = "Button",
+        StrokeColor = {105, 105, 105}, StrokeWidth = 1,
+        CornerRadius = 2, Margin = 5, Padding = 0,
+        Position = {b[3], b[4]}, Size = {pvB, pvB}
+      }
+    end
 
   else
 

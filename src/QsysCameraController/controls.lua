@@ -193,12 +193,38 @@
     local def = KIND_DEF[d.kind](d)
     def.Name = d.name
     def.Count = 1
-    def.UserPin = true
+    def.UserPin = (d.pin ~= false)
     table.insert(ctrls, def)
   end
 
   for _, d in ipairs(CamCtls) do EmitCamCtl(d) end
   for _, t in ipairs(CamPageTriggers) do EmitCamCtl({name = t.name, kind = "trigger"}) end
+
+  -- Preview overlay pad -------------------------------------------------------
+  -- Drives the same camera controls as the main pad, but these are UI-only:
+  -- they carry the camera's own control names and no pin.
+  local previewPad = {
+    {name = "pan.left.tilt.up",    icon = "Arrow Left-Up",    pretty = "Pan Left / Tilt Up"},
+    {name = "tilt.up",             icon = "Arrow Up",         pretty = "Tilt Up"},
+    {name = "pan.right.tilt.up",   icon = "Arrow Right-Up",   pretty = "Pan Right / Tilt Up"},
+    {name = "pan.left",            icon = "Arrow Left",       pretty = "Pan Left"},
+    {name = "pan.right",           icon = "Arrow Right",      pretty = "Pan Right"},
+    {name = "pan.left.tilt.down",  icon = "Arrow Left-Down",  pretty = "Pan Left / Tilt Down"},
+    {name = "tilt.down",           icon = "Arrow Down",       pretty = "Tilt Down"},
+    {name = "pan.right.tilt.down", icon = "Arrow Right-Down", pretty = "Pan Right / Tilt Down"},
+    {name = "zoom.in",             icon = "Zoom In",          pretty = "Zoom In"},
+    {name = "zoom.out",            icon = "Zoom Out",         pretty = "Zoom Out"}
+  }
+  for _, b in ipairs(previewPad) do
+    table.insert(ctrls, {
+      Name = b.name,
+      ControlType = "Button",
+      ButtonType = "Momentary",
+      Icon = b.icon,
+      Count = 1,
+      UserPin = false
+    })
+  end
 
   -- Numbered presets (tap = recall, hold = save). The button itself lights
   -- (its .Boolean is driven) when the camera is at that stored position.
