@@ -14,40 +14,45 @@
     ok_rj = (rapidjson ~= nil)
   end
 
-  -- Each logical button maps to a native QSC camera control name.
-  local PTZ_MAP = {
-    ptz_pan_left  = "pan.left",
-    ptz_pan_right = "pan.right",
-    ptz_tilt_up   = "tilt.up",
-    ptz_tilt_down = "tilt.down",
-    ptz_zoom_in   = "zoom.in",
-    ptz_zoom_out  = "zoom.out",
-    ptz_focus_in  = "focus.far",   -- Focus In  = focus.far
-    ptz_focus_out = "focus.near"   -- Focus Out = focus.near
+  -- Control names throughout are underscored: one spelling for our own control,
+  -- for the pin, for the name external control addresses, and for the camera
+  -- control it drives.
+  --
+  -- Momentary buttons: a press writes straight through to its camera control.
+  local PTZ_DIRECT = {
+    "pan_left", "pan_right", "tilt_up", "tilt_down",
+    "zoom_in", "zoom_out",
+    "focus_far",   -- Focus In
+    "focus_near"   -- Focus Out
   }
 
-  -- Diagonals use the dedicated diagonal control, falling back to driving the
-  -- two cardinal directions together if a camera lacks it.
-  local DIAG_MAP = {
-    ptz_up_left    = {ctl = "pan.left.tilt.up",    fallback = {"ptz_tilt_up",   "ptz_pan_left"}},
-    ptz_up_right   = {ctl = "pan.right.tilt.up",   fallback = {"ptz_tilt_up",   "ptz_pan_right"}},
-    ptz_down_left  = {ctl = "pan.left.tilt.down",  fallback = {"ptz_tilt_down", "ptz_pan_left"}},
-    ptz_down_right = {ctl = "pan.right.tilt.down", fallback = {"ptz_tilt_down", "ptz_pan_right"}}
+  -- Diagonals drive through their own handler: a camera without the dedicated
+  -- diagonal control falls back to driving the two cardinals together.
+  local DIAG_DIRECT = {
+    {name = "pan_left_tilt_up",    fallback = {"tilt_up",   "pan_left"}},
+    {name = "pan_right_tilt_up",   fallback = {"tilt_up",   "pan_right"}},
+    {name = "pan_left_tilt_down",  fallback = {"tilt_down", "pan_left"}},
+    {name = "pan_right_tilt_down", fallback = {"tilt_down", "pan_right"}}
   }
+  local DiagByName = {}
+  for _, d in ipairs(DIAG_DIRECT) do DiagByName[d.name] = d end
 
   -- One-shot trigger buttons.
-  local TRIGGER_MAP = {
-    ptz_home     = "preset.home.load",
-    home_save    = "preset.home.save.trigger",
-    privacy_save = "preset.private.save.trigger"
+  local TRIGGER_DIRECT = {
+    "preset_home_load",
+    "preset_home_save_trigger",
+    "preset_private_save_trigger",
+    "focus_auto"
   }
 
   -- Positions are read/written as a coordinate string on this control.
-  local COORD_CTRL = "ptz.preset"
+  local COORD_CTRL = "ptz_preset"
   -- Privacy recall toggles this Boolean.
-  local PRIVACY_TOGGLE = "toggle.privacy"
+  local PRIVACY_TOGGLE = "toggle_privacy"
+  -- A USB bridge reports its connected camera here.
+  local CAM_SOURCE = "peripheral_camera_source"
   -- Auto white balance mode (a ComboBox on the native camera).
-  local WB_MODE = "wb.awb.mode"
+  local WB_MODE = "wb_awb_mode"
   -- The camera normally reports its own Choices; fall back to the known modes so
   -- the combo is never empty on a model that does not.
   local WB_MODE_CHOICES = {"Auto", "Manual", "One Push"}
@@ -102,11 +107,11 @@
   local function DriveDiagonal(def, value)
     local cam = ActiveCam()
     if cam == nil then return end
-    if HasControl(cam, def.ctl) then
-      pcall(function() cam[def.ctl].Boolean = value end)
+    if HasControl(cam, def.name) then
+      pcall(function() cam[def.name].Boolean = value end)
     else
-      for _, logical in ipairs(def.fallback) do
-        SetCtl(PTZ_MAP[logical], value)
+      for _, name in ipairs(def.fallback) do
+        SetCtl(name, value)
       end
     end
   end
@@ -118,7 +123,7 @@
     if cam and HasControl(cam, PRIVACY_TOGGLE) then
       pcall(function() v = cam[PRIVACY_TOGGLE].Boolean end)
     end
-    local ctl = Controls["privacy_load"]
+    local ctl = Controls["toggle_privacy"]
     if ctl then
       PrivacyFbSuppress = true
       if ctl.Boolean ~= v then ctl.Boolean = v end
@@ -129,7 +134,7 @@
   -- Mirror one registry control in from the active camera. Every write is
   -- conditional, so a settled control emits no events of its own.
   local function MirrorIn(d)
-    local ctl = Controls[d.name]
+    local ctl = Controls[CtlName(d.name)]
     if ctl == nil then return end
     local cam = ActiveCam()
     local present = (cam ~= nil) and HasControl(cam, d.name)
@@ -170,7 +175,7 @@
         -- The camera's State Trigger pattern: lit state lives on a .state
         -- sibling when there is one, otherwise on the control itself.
         local v
-        local st = d.name .. ".state"
+        local st = d.name .. "_state"
         if HasControl(cam, st) then
           pcall(function() v = cam[st].Boolean end)
         else
@@ -200,7 +205,7 @@
   local function RefreshDisabled()
     local cam = ActiveCam()
     for _, d in ipairs(CamCtls) do
-      local ctl = Controls[d.name]
+      local ctl = Controls[CtlName(d.name)]
       if ctl ~= nil then
         local want = true
         if cam ~= nil and HasControl(cam, d.name) then
@@ -251,13 +256,13 @@
   end
 
   -- Presets are keyed by the camera's *source* identity, not the component
-  -- name: a USB bridge reports its connected camera in "peripheral.camera.source",
+  -- name: a USB bridge reports its connected camera in CAM_SOURCE,
   -- so presets follow the physical camera. Native cameras key on their own name.
   local function ActiveCamKey()
     local cam = ActiveCam()
-    if cam ~= nil and HasControl(cam, "peripheral.camera.source") then
+    if cam ~= nil and HasControl(cam, CAM_SOURCE) then
       local s
-      pcall(function() s = cam["peripheral.camera.source"].String end)
+      pcall(function() s = cam[CAM_SOURCE].String end)
       if s ~= nil and s ~= "" then return s end
     end
     return ActiveCamName()
@@ -324,8 +329,8 @@
   local function UpdateMovingNow()
     local cam = ActiveCam()
     local v = false
-    if cam and HasControl(cam, "is.moving") then
-      pcall(function() v = cam["is.moving"].Boolean end)
+    if cam and HasControl(cam, "is_moving") then
+      pcall(function() v = cam["is_moving"].Boolean end)
     end
     local ctl = Controls["is_moving"]
     if ctl and ctl.Boolean ~= v then ctl.Boolean = v end
@@ -342,10 +347,10 @@
   end
 
   local function UpdateCoordinatesNow()
-    if Controls["coordinates"] then
+    if Controls["ptz_preset"] then
       local want = CurrentCoords() or ""
       CoordFbSuppress = true
-      if Controls["coordinates"].String ~= want then Controls["coordinates"].String = want end
+      if Controls["ptz_preset"].String ~= want then Controls["ptz_preset"].String = want end
       CoordFbSuppress = false
     end
   end
@@ -369,16 +374,16 @@
   end
 
   local function BindActiveFeedback()
-    if MovingBoundCam ~= nil and HasControl(MovingBoundCam, "is.moving") then
-      pcall(function() MovingBoundCam["is.moving"].EventHandler = nil end)
+    if MovingBoundCam ~= nil and HasControl(MovingBoundCam, "is_moving") then
+      pcall(function() MovingBoundCam["is_moving"].EventHandler = nil end)
     end
     MovingBoundCam = nil
     if CoordBoundCam ~= nil and HasControl(CoordBoundCam, COORD_CTRL) then
       pcall(function() CoordBoundCam[COORD_CTRL].EventHandler = nil end)
     end
     CoordBoundCam = nil
-    if SrcBoundCam ~= nil and HasControl(SrcBoundCam, "peripheral.camera.source") then
-      pcall(function() SrcBoundCam["peripheral.camera.source"].EventHandler = nil end)
+    if SrcBoundCam ~= nil and HasControl(SrcBoundCam, CAM_SOURCE) then
+      pcall(function() SrcBoundCam[CAM_SOURCE].EventHandler = nil end)
     end
     SrcBoundCam = nil
     if PrivBoundCam ~= nil and HasControl(PrivBoundCam, PRIVACY_TOGGLE) then
@@ -394,9 +399,9 @@
     end
     local cam = ActiveCam()
     if cam ~= nil then
-      if HasControl(cam, "peripheral.camera.source") then
+      if HasControl(cam, CAM_SOURCE) then
         pcall(function()
-          cam["peripheral.camera.source"].EventHandler = function()
+          cam[CAM_SOURCE].EventHandler = function()
             CheckCamera()
             UpdatePresetHighlights()
           end
@@ -422,9 +427,9 @@
           CamBound[d.name] = cam
         end
       end
-      if HasControl(cam, "is.moving") then
+      if HasControl(cam, "is_moving") then
         pcall(function()
-          cam["is.moving"].EventHandler = function(ctl)
+          cam["is_moving"].EventHandler = function(ctl)
             local out = Controls["is_moving"]
             if out and out.Boolean ~= ctl.Boolean then out.Boolean = ctl.Boolean end
           end
@@ -466,6 +471,16 @@
     if found and found.Boolean then found.Boolean = false end
   end
 
+  -- A component carrying any of these is a camera.
+  local CAM_MARKERS = {}
+  for _, n in ipairs({"pan_left", "tilt_up", "ptz_preset", CAM_SOURCE}) do
+    CAM_MARKERS[n] = true
+  end
+  -- ...unless it is another copy of this plugin. Our own controls are spelled
+  -- the underscored way, so we match our own markers; this control is unique to
+  -- us and rules that out.
+  local SELF_MARKER = "active_camera_name"
+
   local function DiscoverCameras()
     local list = {}
     local ok, comps = pcall(Component.GetComponents)
@@ -475,24 +490,20 @@
     end
     for _, c in ipairs(comps) do
       local isCam = false
-      if type(c.Type) == "string" then
+      local isSelf = false
+      local ok2, ctrls = pcall(function() return Component.GetControls(Component.New(c.Name)) end)
+      if ok2 and ctrls ~= nil then
+        for _, ctl in ipairs(ctrls) do
+          local n = ctl.Name
+          if n == SELF_MARKER then isSelf = true break end
+          if CAM_MARKERS[n] then isCam = true end
+        end
+      end
+      if not isCam and not isSelf and type(c.Type) == "string" then
         local t = string.lower(c.Type)
         if string.find(t, "camera", 1, true) or string.find(t, "uvc", 1, true) then isCam = true end
       end
-      if not isCam then
-        local ok2, ctrls = pcall(function() return Component.GetControls(Component.New(c.Name)) end)
-        if ok2 and ctrls ~= nil then
-          for _, ctl in ipairs(ctrls) do
-            local n = ctl.Name
-            if n == "pan.left" or n == "tilt.up"
-               or n == "ptz.preset" or n == "peripheral.camera.source" then
-              isCam = true
-              break
-            end
-          end
-        end
-      end
-      if isCam then table.insert(list, c.Name) end
+      if isCam and not isSelf then table.insert(list, c.Name) end
     end
     table.sort(list)
     dbg("found", #list, "cameras")
@@ -554,10 +565,10 @@
   end
 
   -- Router components disagree on control naming: the classic Router and
-  -- Router with Mixer expose "select.N", while the MediaCast Router renamed
-  -- the same control to "output.N.select". Resolve the name against the bound
+  -- Router with Mixer expose "select_N", while the MediaCast Router renamed
+  -- the same control to "output_N_select". Resolve the name against the bound
   -- component instead of assuming either form.
-  local SELECT_FORMS = {"select.%d", "output.%d.select"}
+  local SELECT_FORMS = {"select_%d", "output_%d_select"}
 
   -- Snapshot the bound router's control names so a renamed readout can be
   -- matched by pattern rather than guessed.
@@ -584,14 +595,14 @@
   -- Routed-source-name readout: the classic name first, then any control on
   -- this router whose name carries "source", "name" and the output index.
   local function ResolveSourceNameCtl(out)
-    local classic = fmt("output.%d.source.name", out)
+    local classic = fmt("output_%d_source_name", out)
     if HasControl(RouterProxy, classic) then return classic end
-    local tok = "." .. out .. "."
+    local tok = "_" .. out .. "_"
     for _, name in ipairs(RouterCtlNames) do
       local lower = string.lower(name)
       if string.find(lower, "source", 1, true)
          and string.find(lower, "name", 1, true)
-         and string.find("." .. lower .. ".", tok, 1, true) then
+         and string.find("_" .. lower .. "_", tok, 1, true) then
         return name
       end
     end
@@ -701,8 +712,8 @@
         local ok2, ctrls = pcall(function() return Component.GetControls(Component.New(c.Name)) end)
         if ok2 and ctrls ~= nil then
           for _, ctl in ipairs(ctrls) do
-            -- "select.1" = classic Router; "output.1.select" = MediaCast Router
-            if ctl.Name == "select.1" or ctl.Name == "output.1.select" then isR = true break end
+            -- "select_1" = classic Router; "output_1_select" = MediaCast Router
+            if ctl.Name == "select_1" or ctl.Name == "output_1_select" then isR = true break end
           end
         end
       end
@@ -760,15 +771,15 @@
     end
   end
 
-  for name, target in pairs(PTZ_MAP) do
-    local ctl = Controls[name]
+  for _, name in ipairs(PTZ_DIRECT) do
+    local ctl = Controls[CtlName(name)]
     if ctl ~= nil then
-      ctl.EventHandler = function(c) SetCtl(target, c.Boolean) end
+      ctl.EventHandler = function(c) SetCtl(name, c.Boolean) end
     end
   end
 
-  for name, def in pairs(DIAG_MAP) do
-    local ctl = Controls[name]
+  for _, def in ipairs(DIAG_DIRECT) do
+    local ctl = Controls[CtlName(def.name)]
     if ctl ~= nil then
       ctl.EventHandler = function(c) DriveDiagonal(def, c.Boolean) end
     end
@@ -777,12 +788,12 @@
   -- Preview overlay pad: a second set of buttons onto the same camera controls
   -- as the main pad.
   local PREVIEW_MAP = {
-    preview_pan_left  = "pan.left",
-    preview_pan_right = "pan.right",
-    preview_tilt_up   = "tilt.up",
-    preview_tilt_down = "tilt.down",
-    preview_zoom_in   = "zoom.in",
-    preview_zoom_out  = "zoom.out"
+    preview_pan_left  = "pan_left",
+    preview_pan_right = "pan_right",
+    preview_tilt_up   = "tilt_up",
+    preview_tilt_down = "tilt_down",
+    preview_zoom_in   = "zoom_in",
+    preview_zoom_out  = "zoom_out"
   }
   for name, target in pairs(PREVIEW_MAP) do
     local ctl = Controls[name]
@@ -791,10 +802,10 @@
     end
   end
   local PREVIEW_DIAG = {
-    preview_up_left    = DIAG_MAP.ptz_up_left,
-    preview_up_right   = DIAG_MAP.ptz_up_right,
-    preview_down_left  = DIAG_MAP.ptz_down_left,
-    preview_down_right = DIAG_MAP.ptz_down_right
+    preview_up_left    = DiagByName["pan_left_tilt_up"],
+    preview_up_right   = DiagByName["pan_right_tilt_up"],
+    preview_down_left  = DiagByName["pan_left_tilt_down"],
+    preview_down_right = DiagByName["pan_right_tilt_down"]
   }
   for name, def in pairs(PREVIEW_DIAG) do
     local ctl = Controls[name]
@@ -803,15 +814,15 @@
     end
   end
 
-  for name, target in pairs(TRIGGER_MAP) do
-    local ctl = Controls[name]
+  for _, name in ipairs(TRIGGER_DIRECT) do
+    local ctl = Controls[CtlName(name)]
     if ctl ~= nil then
-      ctl.EventHandler = function() PulseCtl(target) end
+      ctl.EventHandler = function() PulseCtl(name) end
     end
   end
 
-  if Controls["privacy_load"] ~= nil then
-    Controls["privacy_load"].EventHandler = function(ctl)
+  if Controls["toggle_privacy"] ~= nil then
+    Controls["toggle_privacy"].EventHandler = function(ctl)
       if PrivacyFbSuppress then return end
       SetCtl(PRIVACY_TOGGLE, ctl.Boolean)
     end
@@ -828,7 +839,7 @@
       -- Momentary, so only the press is a request -- the low edge is our own
       -- feedback write settling and must not fire the camera again.
       if not c.Boolean then return end
-      local trig = d.name .. ".trigger"
+      local trig = d.name .. "_trigger"
       if HasControl(cam, trig) then PulseCtl(trig) else PulseCtl(d.name) end
       return
     end
@@ -843,26 +854,22 @@
 
   local READ_ONLY_KIND = {ro = true, led = true, status = true, media = true}
   for _, d in ipairs(CamCtls) do
-    local ctl = Controls[d.name]
+    local ctl = Controls[CtlName(d.name)]
     if ctl ~= nil and not READ_ONLY_KIND[d.kind] then
       ctl.EventHandler = function(c) WriteOut(d, c) end
     end
   end
 
   for _, t in ipairs(CamPageTriggers) do
-    local ctl = Controls[t.name]
+    local ctl = Controls[CtlName(t.name)]
     if ctl ~= nil then
       ctl.EventHandler = function() PulseCtl(t.name) end
     end
   end
 
-  if Controls["ptz_af"] ~= nil then
-    Controls["ptz_af"].EventHandler = function() PulseCtl("focus.auto") end
-  end
-
   -- Editing the Coordinates field writes the position to the active camera.
-  if Controls["coordinates"] ~= nil then
-    Controls["coordinates"].EventHandler = function(ctl)
+  if Controls["ptz_preset"] ~= nil then
+    Controls["ptz_preset"].EventHandler = function(ctl)
       if CoordFbSuppress then return end
       local cam = ActiveCam()
       if cam ~= nil and HasControl(cam, COORD_CTRL) then

@@ -132,37 +132,27 @@
     -- 3x3 directional pad with an empty centre (matches the QSC layout)
     local padR2, padR3 = padY + padPitch, padY + 2 * padPitch
     local pad = {
-      ptz_up_left    = {padX,                  padY},
-      ptz_tilt_up    = {padX + padPitch,       padY},
-      ptz_up_right   = {padX + 2 * padPitch,   padY},
-      ptz_pan_left   = {padX,                  padR2},
-      ptz_pan_right  = {padX + 2 * padPitch,   padR2},
-      ptz_down_left  = {padX,                  padR3},
-      ptz_tilt_down  = {padX + padPitch,       padR3},
-      ptz_down_right = {padX + 2 * padPitch,   padR3}
+      {"pan_left_tilt_up",    "Pan-Tilt-Zoom~Pan Left / Tilt Up",   padX,                padY},
+      {"tilt_up",             "Pan-Tilt-Zoom~Tilt Up",              padX + padPitch,     padY},
+      {"pan_right_tilt_up",   "Pan-Tilt-Zoom~Pan Right / Tilt Up",  padX + 2 * padPitch, padY},
+      {"pan_left",            "Pan-Tilt-Zoom~Pan Left",             padX,                padR2},
+      {"pan_right",           "Pan-Tilt-Zoom~Pan Right",            padX + 2 * padPitch, padR2},
+      {"pan_left_tilt_down",  "Pan-Tilt-Zoom~Pan Left / Tilt Down", padX,                padR3},
+      {"tilt_down",           "Pan-Tilt-Zoom~Tilt Down",            padX + padPitch,     padR3},
+      {"pan_right_tilt_down", "Pan-Tilt-Zoom~Pan Right / Tilt Down",padX + 2 * padPitch, padR3}
     }
-    local ptzPretty = {
-      ptz_up_left    = "Pan-Tilt-Zoom~Pan Left / Tilt Up",
-      ptz_tilt_up    = "Pan-Tilt-Zoom~Tilt Up",
-      ptz_up_right   = "Pan-Tilt-Zoom~Pan Right / Tilt Up",
-      ptz_pan_left   = "Pan-Tilt-Zoom~Pan Left",
-      ptz_pan_right  = "Pan-Tilt-Zoom~Pan Right",
-      ptz_down_left  = "Pan-Tilt-Zoom~Pan Left / Tilt Down",
-      ptz_tilt_down  = "Pan-Tilt-Zoom~Tilt Down",
-      ptz_down_right = "Pan-Tilt-Zoom~Pan Right / Tilt Down"
-    }
-    for name, pos in pairs(pad) do
-      layout[name] = {
-        PrettyName = ptzPretty[name],
+    for _, b in ipairs(pad) do
+      layout[b[1]] = {
+        PrettyName = b[2],
         Legend = "", Style = "Button",
         Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true,
-        Margin = 2, Position = {pos[1], pos[2]}, Size = {hB, hB}
+        Margin = 2, Position = {b[3], b[4]}, Size = {hB, hB}
       }
     end
 
     -- Zoom (magnifier icons) -- no column heading, as on the native block
-    layout["ptz_zoom_in"]  = {PrettyName = "Pan-Tilt-Zoom~Zoom In",  Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padY},  Size = {hB, hB}}
-    layout["ptz_zoom_out"] = {PrettyName = "Pan-Tilt-Zoom~Zoom Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padR2}, Size = {hB, hB}}
+    layout["zoom_in"]  = {PrettyName = "Pan-Tilt-Zoom~Zoom In",  Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padY},  Size = {hB, hB}}
+    layout["zoom_out"] = {PrettyName = "Pan-Tilt-Zoom~Zoom Out", Legend = "", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {zoomX, padR2}, Size = {hB, hB}}
 
     -- Home / Privacy (icon + red save, as on the native camera)
     -- Home on the pad's first row, Privacy on its second; labels centred on the
@@ -171,15 +161,15 @@
     table.insert(graphics, {Type = "Text", Text = "Home",    FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, homeY + 8}, Size = {hpLblW, 16}})
     table.insert(graphics, {Type = "Text", Text = "Privacy", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {hpLblX, privY + 8}, Size = {hpLblW, 16}})
 
-    layout["ptz_home"]     = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, homeY}, Size = {hpIcon, 32}}
-    layout["home_save"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, homeY}, Size = {hpSaveW, 32}}
-    layout["privacy_load"] = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, privY}, Size = {hpIcon, 32}}
-    layout["privacy_save"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, privY}, Size = {hpSaveW, 32}}
+    layout["preset_home_load"]           = {PrettyName = "Pan-Tilt-Zoom~Home",         Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, homeY}, Size = {hpIcon, 32}}
+    layout["preset_home_save_trigger"]    = {PrettyName = "Pan-Tilt-Zoom~Save Home",    Legend = "Save\nHome",    FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, homeY}, Size = {hpSaveW, 32}}
+    layout["toggle_privacy"]              = {PrettyName = "Pan-Tilt-Zoom~Privacy Mode", Legend = "",             Style = "Button", Color = Palette.btn_green, OffColor = Palette.gray_off, UnlinkOffColor = true, Margin = 2, Position = {hpIconX, privY}, Size = {hpIcon, 32}}
+    layout["preset_private_save_trigger"] = {PrettyName = "Pan-Tilt-Zoom~Save Privacy", Legend = "Save\nPrivacy", FontSize = 9, Style = "Button", Color = Palette.Red, Margin = 2, Position = {hpSaveX, privY}, Size = {hpSaveW, 32}}
 
     -- Coordinates readout (current ptz.preset position), on its own row above
     -- the toggle rows.
     table.insert(graphics, {Type = "Text", Text = "Coordinates", FontSize = fs1, HTextAlign = "Right", Color = Palette.text, Position = {lblX, coordsY}, Size = {64, 16}})
-    layout["coordinates"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fsM, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 1, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
+    layout["ptz_preset"] = {PrettyName = "Pan-Tilt-Zoom~Coordinates", Style = "Text", FontSize = fsM, HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White, UnlinkOffColor = true, Padding = 1, StrokeWidth = 1, Position = {74, coordsY}, Size = {102, 16}}
 
     -- Two columns of proxied setup rows: toggles on the left, speeds on the
     -- right. Rendered here rather than from CamGroups because this group's
@@ -188,19 +178,21 @@
       table.insert(graphics, {Type = "Text", Text = text, FontSize = fs1,
         HTextAlign = "Right", Color = Palette.text, Position = {x, y}, Size = {w, 16}})
     end
+    -- These take the camera's control name, as the registry spells it, and
+    -- resolve it to the plugin's own underscored control name.
     local function PtzBool(name, pretty, y, x)
-      layout[name] = {PrettyName = pretty, Legend = "", Style = "Button",
+      layout[CtlName(name)] = {PrettyName = pretty, Legend = "", Style = "Button",
         Color = Palette.btn_green, OffColor = Palette.green_off, UnlinkOffColor = true,
         Margin = 2, Position = {x, y}, Size = {32, 16}}
     end
     local function PtzMeter(name, pretty, y, x, w)
-      layout[name] = {PrettyName = pretty, Style = "Text", FontSize = fsM,
+      layout[CtlName(name)] = {PrettyName = pretty, Style = "Text", FontSize = fsM,
         HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
         UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
         Position = {x, y}, Size = {w, 16}}
     end
     local function PtzLed(name, pretty, y, x)
-      layout[name] = {PrettyName = pretty, Style = "Indicator", Color = Palette.green_on,
+      layout[CtlName(name)] = {PrettyName = pretty, Style = "Indicator", Color = Palette.green_on,
         OffColor = Palette.green_off, UnlinkOffColor = true, StrokeWidth = 1, Margin = 3,
         Position = {x, y}, Size = {16, 16}}
     end
@@ -213,24 +205,24 @@
     local spdRow0          = 106
 
     local r = ptzRow0
-    PtzLabel(lblX, r, lblW, "Speed By Zoom");  PtzBool("setup.speed.by.zoom", "Pan-Tilt-Zoom~Speed By Zoom", r, ctlX)
+    PtzLabel(lblX, r, lblW, "Speed By Zoom");  PtzBool("setup_speed_by_zoom", "Pan-Tilt-Zoom~Speed By Zoom", r, ctlX)
     r = r + ptzRowH
     PtzLabel(lblX, r, lblW, "Recalibrate PTZ")
-    layout["ptz.recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
+    layout["ptz_recalibrate"] = {PrettyName = "Pan-Tilt-Zoom~Recalibrate PTZ", Legend = "", Style = "Button",
       Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
       Margin = 2, Position = {ctlX, r}, Size = {32, 16}}
     r = r + ptzRowH
-    PtzLabel(lblX, r, lblW, "Ceiling Mount");  PtzBool("setup.ceiling.mount", "Pan-Tilt-Zoom~Ceiling Mount", r, ctlX)
+    PtzLabel(lblX, r, lblW, "Ceiling Mount");  PtzBool("setup_ceiling_mount", "Pan-Tilt-Zoom~Ceiling Mount", r, ctlX)
     r = r + ptzRowH
     PtzLabel(lblX, r, lblW, "Is Moving");      PtzLed("is_moving", "Pan-Tilt-Zoom~Is Moving", r, ctlX)
     r = r + ptzRowH
-    PtzLabel(lblX, r, lblW, "Move Completed"); PtzLed("move.completed", "Pan-Tilt-Zoom~Move Completed", r, ctlX)
+    PtzLabel(lblX, r, lblW, "Move Completed"); PtzLed("move_completed", "Pan-Tilt-Zoom~Move Completed", r, ctlX)
 
     local SPEEDS = {
-      {"setup.pan.speed",            "Pan-Tilt-Zoom~Pan Speed",    "Pan Speed"},
-      {"setup.tilt.speed",           "Pan-Tilt-Zoom~Tilt Speed",   "Tilt Speed"},
-      {"setup.zoom.speed",           "Pan-Tilt-Zoom~Zoom Speed",   "Zoom Speed"},
-      {"aaaa.setup.snapshot.speed",  "Pan-Tilt-Zoom~Recall Speed", "Recall Speed"}
+      {"setup_pan_speed",            "Pan-Tilt-Zoom~Pan Speed",    "Pan Speed"},
+      {"setup_tilt_speed",           "Pan-Tilt-Zoom~Tilt Speed",   "Tilt Speed"},
+      {"setup_zoom_speed",           "Pan-Tilt-Zoom~Zoom Speed",   "Zoom Speed"},
+      {"aaaa_setup_snapshot_speed",  "Pan-Tilt-Zoom~Recall Speed", "Recall Speed"}
     }
     for i, s in ipairs(SPEEDS) do
       local sy = spdRow0 + (i - 1) * ptzRowH
@@ -254,9 +246,9 @@
     table.insert(graphics, {Type = "Text", Text = "Mode", FontSize = fs1, HTextAlign = "Right",  Color = Palette.text, Position = {71,   fHeadY}, Size = {35, 16}})
     table.insert(graphics, {Type = "Text", Text = "In",   FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX,  fHeadY}, Size = {hB, 16}})
     table.insert(graphics, {Type = "Text", Text = "Out",  FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {outX, fHeadY}, Size = {hB, 16}})
-    layout["ptz_af"]        = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {afX,  fBtnY}, Size = {hB, hB}}
-    layout["ptz_focus_in"]  = {PrettyName = "Focus~In",  Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {inX,  fBtnY}, Size = {hB, hB}}
-    layout["ptz_focus_out"] = {PrettyName = "Focus~Out", Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {outX, fBtnY}, Size = {hB, hB}}
+    layout["focus_auto"] = {PrettyName = "Focus~AF",  Legend = "AF", Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {afX,  fBtnY}, Size = {hB, hB}}
+    layout["focus_far"]  = {PrettyName = "Focus~In",  Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {inX,  fBtnY}, Size = {hB, hB}}
+    layout["focus_near"] = {PrettyName = "Focus~Out", Legend = "",   Style = "Button", Color = Palette.White, OffColor = Palette.ptz_off, UnlinkOffColor = true, Margin = 2, Position = {outX, fBtnY}, Size = {hB, hB}}
     table.insert(graphics, {Type = "Text", Text = "Auto",   FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {afX, fCapY}, Size = {32, 16}})
     table.insert(graphics, {Type = "Text", Text = "Manual", FontSize = fs1, HTextAlign = "Center", Color = Palette.text, Position = {inX, fCapY}, Size = {67, 16}})
 
@@ -267,13 +259,13 @@
         HTextAlign = "Right", Color = Palette.text, Position = {179, y}, Size = {80, 16}})
     end
     FocusLabel(276, "Manual Speed")
-    PtzMeter("setup.focus.speed", "Focus~Manual Speed", 276, foX, foW)
+    PtzMeter("setup_focus_speed", "Focus~Manual Speed", 276, foX, foW)
     FocusLabel(295, "AF Sensitivity")
-    layout["setup.focus.sensitivity"] = {PrettyName = "Focus~AF Sensitivity", Style = "ComboBox",
+    layout["setup_focus_sensitivity"] = {PrettyName = "Focus~Sensitivity", Style = "ComboBox",
       FontSize = fsM, HTextAlign = "Center", Color = Palette.White, Padding = 2,
       StrokeWidth = 1, Position = {foX, 295}, Size = {foW, 16}}
     FocusLabel(314, "AF Zone")
-    layout["setup.focus.zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
+    layout["setup_focus_zone"] = {PrettyName = "Focus~AF Zone", Style = "ComboBox",
       FontSize = fsM, HTextAlign = "Center", Color = Palette.White, Padding = 2,
       StrokeWidth = 1, Position = {foX, 314}, Size = {foW, 16}}
 
@@ -391,50 +383,51 @@
     -- own formatted string and is drawn dimmed, as the native block draws a
     -- value you cannot set.
     local function PlaceCtl(d, x, y, w)
+      local name = CtlName(d.name)
       if d.kind == "int" or d.kind == "float" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
+        layout[name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
           HTextAlign = "Center", Color = Palette.meter_on, OffColor = Palette.meter_off,
           UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "enum" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fsM,
+        layout[name] = {PrettyName = d.pretty, Style = "ComboBox", FontSize = fsM,
           HTextAlign = "Center", Color = Palette.White, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "ro" then
         local fill = d.fill or Palette.White
-        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
+        layout[name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
           HTextAlign = "Center", Color = fill, OffColor = fill,
           UnlinkOffColor = true, TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "text" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
+        layout[name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
           HTextAlign = "Center", Color = Palette.White, OffColor = Palette.White,
           UnlinkOffColor = true, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, ctlH}}
       elseif d.kind == "status" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
+        layout[name] = {PrettyName = d.pretty, Style = "Text", FontSize = fsM,
           HTextAlign = "Center", Color = d.fill or Palette.White,
           TextColor = Palette.Black, Padding = 2, StrokeWidth = 1,
           Position = {x, y}, Size = {w, d.h or ctlH}}
       elseif d.kind == "led" then
-        layout[d.name] = {PrettyName = d.pretty, Style = "Indicator",
+        layout[name] = {PrettyName = d.pretty, Style = "Indicator",
           Color = d.fill or Palette.green_on, OffColor = d.offFill or Palette.green_off,
           UnlinkOffColor = true, StrokeWidth = 1, Margin = 3,
           Position = {x, y}, Size = {16, 16}}
       elseif d.kind == "bool" then
         -- legendOff is the starting caption; the runtime swaps it with the state.
-        layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",
+        layout[name] = {PrettyName = d.pretty, Legend = d.legend or d.legendOff or "",
           FontSize = fsM, Style = "Button",
           Color = d.fill or Palette.btn_green, OffColor = d.offFill or Palette.green_off,
           UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {d.w or 32, ctlH}}
       elseif d.kind == "statetrig" then
-        layout[d.name] = {PrettyName = d.pretty, Legend = d.legend or "", FontSize = fsM,
+        layout[name] = {PrettyName = d.pretty, Legend = d.legend or "", FontSize = fsM,
           Style = "Button", Color = d.fill or Palette.btn_green,
           OffColor = d.offFill or Palette.gray_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {d.w or 32, d.h or ctlH}}
       elseif d.kind == "trigger" then
-        layout[d.name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
+        layout[name] = {PrettyName = d.pretty, Legend = "", Style = "Button",
           Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
           Margin = 2, Position = {x, y}, Size = {math.min(w, 32), ctlH}}
       end
@@ -446,7 +439,7 @@
     for _, t in ipairs(CamPageTriggers) do
       if t.page == CurrentPage then
         PlaceLabel(0, y, 400, t.label)
-        layout[t.name] = {PrettyName = t.pretty, Legend = "", Style = "Button",
+        layout[CtlName(t.name)] = {PrettyName = t.pretty, Legend = "", Style = "Button",
           Color = Palette.White, OffColor = Palette.gray_off, UnlinkOffColor = true,
           Margin = 2, Position = {403, y}, Size = {32, 16}}
         y = y + 16

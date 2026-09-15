@@ -38,7 +38,7 @@
     PinStyle = "Output"
   })
   table.insert(ctrls, {
-    Name = "coordinates",
+    Name = "ptz_preset",
     ControlType = "Text",
     Count = 1,
     UserPin = true,
@@ -111,19 +111,22 @@
 
   -- Shared Pan / Tilt / Zoom / Focus -------------------------------------------
   -- Built-in icons must be declared on the control (not the layout).
+  -- Every button carries the camera's control name with dots swapped for
+  -- underscores (see CtlName), which is also the spelling external control
+  -- expects.
   local ptzButtons = {
-    {name = "ptz_up_left",    icon = "Arrow Left-Up"},
-    {name = "ptz_tilt_up",    icon = "Arrow Up"},
-    {name = "ptz_up_right",   icon = "Arrow Right-Up"},
-    {name = "ptz_pan_left",   icon = "Arrow Left"},
-    {name = "ptz_pan_right",  icon = "Arrow Right"},
-    {name = "ptz_down_left",  icon = "Arrow Left-Down"},
-    {name = "ptz_tilt_down",  icon = "Arrow Down"},
-    {name = "ptz_down_right", icon = "Arrow Right-Down"},
-    {name = "ptz_zoom_in",    icon = "Zoom In"},
-    {name = "ptz_zoom_out",   icon = "Zoom Out"},
-    {name = "ptz_focus_in",  icon = "Plus"},
-    {name = "ptz_focus_out", icon = "Minus"}
+    {name = "pan_left_tilt_up",    icon = "Arrow Left-Up"},
+    {name = "tilt_up",             icon = "Arrow Up"},
+    {name = "pan_right_tilt_up",   icon = "Arrow Right-Up"},
+    {name = "pan_left",            icon = "Arrow Left"},
+    {name = "pan_right",           icon = "Arrow Right"},
+    {name = "pan_left_tilt_down",  icon = "Arrow Left-Down"},
+    {name = "tilt_down",           icon = "Arrow Down"},
+    {name = "pan_right_tilt_down", icon = "Arrow Right-Down"},
+    {name = "zoom_in",             icon = "Zoom In"},
+    {name = "zoom_out",            icon = "Zoom Out"},
+    {name = "focus_far",           icon = "Plus"},   -- Focus In
+    {name = "focus_near",          icon = "Minus"}   -- Focus Out
   }
   for _, b in ipairs(ptzButtons) do
     local def = {
@@ -140,10 +143,10 @@
 
   -- Home / Privacy -------------------------------------------------------------
   local triggerButtons = {
-    {name = "ptz_home", icon = "Home"},
-    {name = "ptz_af"},
-    {name = "home_save"},
-    {name = "privacy_save"}
+    {name = "preset_home_load", icon = "Home"},
+    {name = "focus_auto"},
+    {name = "preset_home_save_trigger"},
+    {name = "preset_private_save_trigger"}
   }
   for _, b in ipairs(triggerButtons) do
     local def = {
@@ -160,7 +163,7 @@
 
   -- Privacy is a toggle reflecting the camera's privacy mode.
   table.insert(ctrls, {
-    Name = "privacy_load",
+    Name = "toggle_privacy",
     ControlType = "Button",
     ButtonType = "Toggle",
     Icon = "Prohibited",
@@ -170,8 +173,9 @@
   })
 
   -- Proxied camera controls ----------------------------------------------------
-  -- Emitted from the registry so a control is declared exactly once. Each keeps
-  -- the camera's own control name, so the pin lines up with what it drives.
+  -- Emitted from the registry so a control is declared exactly once. Each takes
+  -- the camera's own control name via CtlName, so the pin lines up with what it
+  -- drives.
   local KIND_DEF = {
     int       = function(d) return {ControlType = "Knob", ControlUnit = "Integer", Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
     float     = function(d) return {ControlType = "Knob", ControlUnit = "Float",   Min = d.min, Max = d.max, DefaultValue = d.min, PinStyle = "Both"} end,
@@ -191,7 +195,7 @@
 
   local function EmitCamCtl(d)
     local def = KIND_DEF[d.kind](d)
-    def.Name = d.name
+    def.Name = CtlName(d.name)
     def.Count = 1
     def.UserPin = (d.pin ~= false)
     table.insert(ctrls, def)
